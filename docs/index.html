@@ -7,10 +7,11 @@
 <meta name="description" content="CPU-only reproduction of iDrug (Chen, Cheng & Li, PLoS Comput Biol 2020), benchmarked on the authors' real CTD/DrugBank and Gottlieb datasets.">
 <style>
   :root{
-    --bg:#0a0e13; --panel:#10161f; --panel2:#0d131b; --line:#1e2936;
-    --text:#e7edf5; --muted:#8ea0b5; --faint:#5b6b7e;
-    --acc:#4ade80; --acc2:#22d3ee; --warn:#fbbf24; --red:#f87171; --blue:#60a5fa;
+    --bg:#f4f6fa; --panel:#ffffff; --panel2:#eef2f7; --line:#dbe3ec;
+    --text:#1b2537; --muted:#5a6b80; --faint:#93a2b5;
+    --acc:#15803d; --acc2:#0e7490; --warn:#b45309; --red:#dc2626; --blue:#2563eb;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sh:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.05);
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -23,7 +24,7 @@
   h1,h2,h3{line-height:1.25;margin:0}
   .mono{font-family:var(--mono)}
 
-  nav{position:sticky;top:0;z-index:10;background:rgba(10,14,19,.85);backdrop-filter:blur(10px);
+  nav{position:sticky;top:0;z-index:10;background:rgba(244,246,250,.88);backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line)}
   nav .wrap{display:flex;align-items:center;gap:20px;height:58px}
   .brand{font-weight:700;letter-spacing:.02em}
@@ -31,36 +32,36 @@
   nav .links{display:flex;gap:16px;margin-left:auto;font-size:14px;color:var(--muted)}
   nav .links a{color:var(--muted)}
   nav .links a:hover{color:var(--text);text-decoration:none}
-  .ghbtn{border:1px solid var(--line);border-radius:8px;padding:5px 12px;color:var(--text)!important;font-size:13px}
+  .ghbtn{border:1px solid var(--line);border-radius:8px;padding:5px 12px;color:var(--text)!important;font-size:13px;background:var(--panel)}
   .ghbtn:hover{border-color:var(--acc)}
-  @media(max-width:860px){nav .links a:not(.ghbtn){display:none}}
+  @media(max-width:960px){nav .links a:not(.ghbtn){display:none}}
 
   header{padding:72px 0 48px;border-bottom:1px solid var(--line);
-    background:radial-gradient(1100px 420px at 20% -10%,rgba(74,222,128,.09),transparent),
-               radial-gradient(900px 420px at 90% 0%,rgba(34,211,238,.07),transparent)}
+    background:radial-gradient(1100px 420px at 20% -10%,rgba(22,163,74,.08),transparent),
+               radial-gradient(900px 420px at 90% 0%,rgba(14,116,144,.07),transparent)}
   .eyebrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
   .pill{font-size:12px;font-family:var(--mono);border:1px solid var(--line);border-radius:99px;
     padding:4px 12px;color:var(--muted);background:var(--panel)}
-  .pill.green{color:var(--acc);border-color:rgba(74,222,128,.35)}
+  .pill.green{color:var(--acc);border-color:rgba(21,128,61,.35)}
   h1{font-size:clamp(30px,4.6vw,46px);font-weight:800;letter-spacing:-.02em;max-width:840px}
   h1 .hl{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .sub{color:var(--muted);max-width:780px;margin-top:18px;font-size:17px}
   .sub em{color:var(--text);font-style:normal}
   .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
   .btn{display:inline-block;border-radius:9px;padding:10px 18px;font-size:14px;font-weight:600;
-    border:1px solid var(--line);color:var(--text)}
+    border:1px solid var(--line);color:var(--text);background:var(--panel)}
   .btn:hover{text-decoration:none;border-color:var(--acc)}
-  .btn.primary{background:linear-gradient(90deg,rgba(74,222,128,.16),rgba(34,211,238,.14));
-    border-color:rgba(74,222,128,.4);color:var(--acc)}
+  .btn.primary{background:linear-gradient(90deg,rgba(22,163,74,.13),rgba(14,116,144,.11));
+    border-color:rgba(21,128,61,.4);color:var(--acc)}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:44px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--sh)}
   .stat .v{font-size:24px;font-weight:800;font-family:var(--mono);letter-spacing:-.02em}
   .stat .v.green{color:var(--acc)} .stat .v.cyan{color:var(--acc2)} .stat .v.amber{color:var(--warn)}
   .stat .k{font-size:12.5px;color:var(--muted);margin-top:4px}
   @media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}}
 
-  .callout{display:flex;gap:14px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);
-    border-radius:12px;padding:16px 18px;margin:28px 0;font-size:14.5px;color:#e9d9ac}
+  .callout{display:flex;gap:14px;background:rgba(180,83,9,.07);border:1px solid rgba(180,83,9,.3);
+    border-radius:12px;padding:16px 18px;margin:28px 0;font-size:14.5px;color:#713f12}
   .callout .ic{font-size:19px;line-height:1.3}
   .callout strong{color:var(--warn)}
   .callout a{color:var(--warn)}
@@ -77,13 +78,13 @@
   .grid > *{min-width:0}
   .g2{grid-template-columns:1fr 1fr}
   @media(max-width:860px){.g2{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--sh)}
   .card h3{font-size:15px;font-weight:700;margin-bottom:4px}
   .card .note{font-size:13px;color:var(--muted);margin-bottom:14px}
   .card .fig{width:100%}
   .fig svg{width:100%;height:auto;display:block}
 
-  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--sh)}
   table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
   table.cs{min-width:520px}
   th,td{padding:10px 14px;text-align:right;white-space:nowrap}
@@ -92,31 +93,31 @@
     border-bottom:1px solid var(--line);font-weight:600}
   thead tr.grp th{text-align:center;color:var(--acc2);font-size:12px;padding-bottom:2px;border-bottom:none}
   tbody tr{border-top:1px solid var(--panel2)}
-  tbody tr:hover{background:rgba(255,255,255,.016)}
+  tbody tr:hover{background:rgba(15,23,42,.025)}
   td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
-  tr.hero td{background:rgba(74,222,128,.05)}
+  tr.hero td{background:rgba(22,163,74,.06)}
   tr.hero td:first-child{color:var(--acc);font-weight:700}
   .best{color:var(--acc);font-weight:700}
   .bad{color:var(--muted)}
   .sig{color:var(--faint);font-size:12px}
   .bar{position:relative}
   .bar .fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:60%;
-    background:linear-gradient(90deg,rgba(34,211,238,.35),rgba(34,211,238,.12));border-radius:3px;z-index:0}
-  .bar.g .fill{background:linear-gradient(90deg,rgba(74,222,128,.42),rgba(74,222,128,.14))}
+    background:linear-gradient(90deg,rgba(14,116,144,.22),rgba(14,116,144,.07));border-radius:3px;z-index:0}
+  .bar.g .fill{background:linear-gradient(90deg,rgba(22,163,74,.26),rgba(22,163,74,.09))}
   .bar span{position:relative;z-index:1}
 
   .heat td,.heat th{text-align:center;font-family:var(--mono);font-size:12px;padding:8px 6px;white-space:nowrap}
-  .heat td.cell{border-radius:6px;color:#0b0f14;font-weight:600}
+  .heat td.cell{border-radius:6px;color:#12261a;font-weight:600}
   .heat .lbl{color:var(--muted);font-size:12px;font-family:var(--mono)}
 
-  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;background:var(--panel)}
   .toggle button{background:transparent;color:var(--muted);border:0;padding:8px 16px;font-size:13.5px;
     font-family:inherit;cursor:pointer;font-weight:600}
-  .toggle button.on{background:rgba(74,222,128,.14);color:var(--acc)}
+  .toggle button.on{background:rgba(22,163,74,.12);color:var(--acc)}
 
-  pre{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;
-    font-family:var(--mono);font-size:13px;line-height:1.6;color:#cfe0f0;margin:0 0 14px}
-  pre .c{color:var(--faint)}
+  pre{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:16px 18px;overflow-x:auto;
+    font-family:var(--mono);font-size:13px;line-height:1.6;color:#dbe7f5;margin:0 0 14px}
+  pre .c{color:#64748b}
   code{font-family:var(--mono);font-size:.92em;background:var(--panel2);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
 
   .lim{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -128,7 +129,7 @@
 
   .big2{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:720px}
   @media(max-width:700px){.big2{grid-template-columns:1fr}}
-  .bignum{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+  .bignum{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:var(--sh)}
   .bignum .v{font-size:40px;font-weight:800;font-family:var(--mono);letter-spacing:-.02em;line-height:1.1}
   .bignum .k{color:var(--muted);font-size:13.5px;margin-top:6px}
 
@@ -138,6 +139,19 @@
   .kicker{font-family:var(--mono);font-size:12px;color:var(--faint)}
   .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:10px}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+
+  .atlashead{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2);
+    margin:38px 0 14px;padding-top:8px;border-top:1px dashed var(--line)}
+  .figgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .figcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--sh)}
+  .figcard .fighead{display:flex;gap:8px;align-items:baseline;margin-bottom:8px;flex-wrap:wrap}
+  .figcard .figno{font-family:var(--mono);font-size:10px;color:var(--acc2);border:1px solid var(--line);
+    border-radius:99px;padding:1px 7px;white-space:nowrap;background:var(--panel2)}
+  .figcard .figtitle{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35}
+  .figcard .figbody{overflow-x:auto}
+  .figcard .figbody table{margin:0;min-width:0}
+  .figcard .fignote{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
+  .figcard .fignote b{color:var(--text)}
 </style>
 </head>
 <body>
@@ -149,7 +163,7 @@
       <a href="#results">Pair prediction</a>
       <a href="#coldstart">Cold start</a>
       <a href="#robustness">Robustness</a>
-      <a href="#papercheck">Paper check</a>
+      <a href="#atlas">Figure atlas</a>
       <a href="#limits">Limits</a>
       <a href="#run">Run it</a>
       <a class="ghbtn" href="https://github.com/Harshini-Suresha/idrug-reproduction">GitHub ↗</a>
@@ -163,6 +177,7 @@
       <span class="pill green">real CTD + DrugBank data</span>
       <span class="pill">NumPy · CPU-only</span>
       <span class="pill">independent re-implementation</span>
+      <span class="pill">105-figure atlas</span>
     </div>
     <h1>iDrug, re-implemented from scratch — <span class="hl">benchmarked on the authors' real data</span></h1>
     <p class="sub">
@@ -172,18 +187,19 @@
       line-by-line, and implements five baseline methods from their papers — then benchmarks everything on the
       authors' released <em>CTD + DrugBank</em> matrices (1,321 × 3,966; 946 × 3,610; 469 shared drugs) and their
       smaller <em>Gottlieb gold-standard</em> dataset. Every number on this page regenerates from the committed
-      scripts.
+      scripts, and the figure atlas below draws all of it in 105 live charts.
     </p>
     <div class="cta">
       <a class="btn primary" href="https://github.com/Harshini-Suresha/idrug-reproduction">Source code ↗</a>
       <a class="btn" href="https://doi.org/10.1371/journal.pcbi.1008040">The paper (PLOS) ↗</a>
       <a class="btn" href="https://github.com/Case-esaC/iDrug">Authors' data + MATLAB ↗</a>
+      <a class="btn" href="#atlas">Jump to the atlas ↓</a>
     </div>
     <div class="stats">
       <div class="stat"><div class="v cyan">8</div><div class="k">methods benchmarked — iDrug, a line-by-line port of the official solver, GRMF, RLS-Kron, bi-random walk, similarity-kNN, popularity</div></div>
       <div class="stat"><div class="v green">111,481</div><div class="k">real drug–disease interactions (CTD), plus 10,234 drug–target pairs (DrugBank)</div></div>
       <div class="stat"><div class="v">469</div><div class="k">shared (anchor) drugs bridging the two domains — partial overlap, as in the paper</div></div>
-      <div class="stat"><div class="v amber">2</div><div class="k">real datasets — CTD/DrugBank and the Gottlieb gold standard; synthetic generators kept for testing</div></div>
+      <div class="stat"><div class="v amber">105</div><div class="k">figures in the atlas — all rendered in-browser from the real-data JSONs, none synthetic</div></div>
     </div>
   </div>
 </header>
@@ -316,6 +332,30 @@
         <div class="fig" id="figWithhold"></div>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="atlas">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">The figure atlas</div>
+      <h2><span id="atlasCount">105</span> figures — the whole real-data run, drawn every which way</h2>
+      <p class="sdesc">
+        Every figure below is generated in your browser from the committed real-data files
+        (<span class="mono">results_real.json</span>, <span class="mono">sweeps_real.json</span> → <span class="mono">docs/idrug-data.js</span>):
+        the authors' CTD + DrugBank matrices and Gottlieb gold standard, 8 methods, 5-fold CV, seed 0.
+        No synthetic data, no pre-rendered images — hover any mark for the number behind it.
+      </p>
+    </div>
+    <div class="legend" id="atlasLegend"></div>
+    <h3 class="atlashead" id="headA">A · Pair prediction — 40 figures</h3>
+    <div class="figgrid" id="gA"></div>
+    <h3 class="atlashead" id="headB">B · Cold start — 40 figures</h3>
+    <div class="figgrid" id="gB"></div>
+    <h3 class="atlashead" id="headC">C · Real-data sweeps — 11 figures</h3>
+    <div class="figgrid" id="gC"></div>
+    <h3 class="atlashead" id="headD">D · Profiles, variability, dataset anatomy, paper check — 14 figures</h3>
+    <div class="figgrid" id="gD"></div>
   </div>
 </section>
 
@@ -464,22 +504,40 @@ const mm = x => Array.isArray(x) ? x[0] : x;
 const ss = x => Array.isArray(x) && x[1] != null ? x[1] : null;
 const $ = s => document.querySelector(s);
 
+const PAL = {
+  green:"#15803d", teal:"#0d9488", lime:"#65a30d", blue:"#2563eb", purple:"#7c3aed",
+  cyan:"#0e7490", amber:"#d97706", slate:"#94a3b8",
+  grid:"#e2e8f0", axis:"#64748b", ink:"#1b2537", faint:"#a9b6c6", red:"#dc2626", panel:"#eef2f7"
+};
+const METHODS = ["iDrug","iDrug-official","GRMF-style","GRMF","RLS-Kron","BiRW-simplified","Similarity-kNN","Popularity"];
+const MCOL = {
+  "iDrug":PAL.green, "iDrug-official":PAL.teal, "GRMF-style":PAL.lime, "GRMF":PAL.blue,
+  "RLS-Kron":PAL.purple, "BiRW-simplified":PAL.cyan, "Similarity-kNN":PAL.amber, "Popularity":PAL.slate
+};
+const SHORT = {
+  "iDrug":"iD", "iDrug-official":"iDo", "GRMF-style":"GS", "GRMF":"GM",
+  "RLS-Kron":"RLS", "BiRW-simplified":"BW", "Similarity-kNN":"kNN", "Popularity":"POP"
+};
+const DSL = {ctd:"CTD + DrugBank", gold:"Gottlieb gold"};
+const TSL = {drug_disease:"drug–disease", drug_target:"drug–target"};
+const SCL = {newdrug:"new drug", newcol:"new disease/target"};
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const byShort = a => a.slice().sort((x,y)=>y[1]-x[1]);
+
 if (!D || !D.real){
   document.body.insertAdjacentHTML("afterbegin",
-    "<div style='padding:40px;color:#f87171;font-family:monospace'>idrug-data.js missing or empty — run: python make_site_data.py</div>");
-} else {
-  render();
+    "<div style='padding:40px;color:#dc2626;font-family:monospace'>idrug-data.js missing or empty — run: python make_site_data.py</div>");
 }
 
 function pairRows(ds){
   const dd = D.real[`${ds}_pair_drug_disease`], dt = D.real[`${ds}_pair_drug_target`];
-  const methods = ["iDrug","iDrug-official","GRMF-style","GRMF","RLS-Kron","BiRW-simplified","Similarity-kNN","Popularity"];
-  const best = (tbl, i) => {
+  const methods = METHODS;
+  const best = (tbl) => {
     let b=-Infinity,name="";
     for (const m of methods){ if (tbl[m] && mm(tbl[m].aupr) > b){ b=mm(tbl[m].aupr); name=m; } }
     return name;
   };
-  const b = {dda:best(dd,0), ddp:best(dd,1), dta:best(dt,0), dtp:best(dt,1)};
+  const b = {ddp:best(dd), dtp:best(dt)};
   return methods.map(m => {
     const a = dd[m], c = dt[m];
     const color = m.startsWith("iDrug") || m==="GRMF-style" ? "var(--acc)" : (m==="Popularity"||m==="Similarity-kNN") ? "var(--muted)" : "var(--blue)";
@@ -498,7 +556,7 @@ function pairRows(ds){
 
 function coldRows(ds, which){
   const dd = D.real[`${ds}_${which}_drug_disease`], dt = D.real[`${ds}_${which}_drug_target`];
-  const methods = ["iDrug","iDrug-official","GRMF-style","GRMF","RLS-Kron","BiRW-simplified","Similarity-kNN","Popularity"];
+  const methods = METHODS;
   const ks = ["5","10","15"];
   const bestj = (tbl, k) => { let b=-Infinity,n=""; for (const m of methods){ if (tbl && mm(tbl[m][ks[k]]) > b){ b=mm(tbl[m][ks[k]]); n=m; } } return n; };
   const cell = (tbl, k, off, m) => {
@@ -529,27 +587,564 @@ function lineChart(el, {x, y, sd, xLabels, color, yMin, yMax, ref, refLabel, tic
   let g = "";
   for(let i=0;i<=ticks;i++){
     const val = yMin + (yMax-yMin)*i/ticks, yy = yv(val);
-    g += `<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="#1e2936" stroke-width="1"/>`;
-    g += `<text x="${padL-10}" y="${yy+4}" text-anchor="end" fill="#5b6b7e" font-size="11" font-family="var(--mono)">${val.toFixed(2)}</text>`;
+    g += `<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="${PAL.grid}" stroke-width="1"/>`;
+    g += `<text x="${padL-10}" y="${yy+4}" text-anchor="end" fill="${PAL.axis}" font-size="11" font-family="ui-monospace,Menlo,monospace">${val.toFixed(2)}</text>`;
   }
   if (ref !== undefined && ref !== null){
-    g += `<line x1="${padL}" x2="${W-padR}" y1="${yv(ref)}" y2="${yv(ref)}" stroke="#8ea0b5" stroke-dasharray="5 5" stroke-width="1"/>`;
-    if (refLabel) g += `<text x="${W-padR}" y="${yv(ref)-6}" text-anchor="end" fill="#8ea0b5" font-size="10" font-family="var(--mono)">${refLabel}</text>`;
+    g += `<line x1="${padL}" x2="${W-padR}" y1="${yv(ref)}" y2="${yv(ref)}" stroke="${PAL.faint}" stroke-dasharray="5 5" stroke-width="1"/>`;
+    if (refLabel) g += `<text x="${W-padR}" y="${yv(ref)-6}" text-anchor="end" fill="${PAL.axis}" font-size="10" font-family="ui-monospace,Menlo,monospace">${refLabel}</text>`;
   }
   const pts = x.map((v,i)=>`${xs[i]},${yv(y[i])}`).join(" ");
   let curve = `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
   if (sd && sd.some(v=>v!=null)){
     const up = x.map((v,i)=> sd[i]==null?"":`${xs[i]},${yv(y[i]+sd[i])}`).filter(Boolean).join(" ");
     const dn = x.map((v,i)=> sd[i]==null?"":`${xs[i]},${yv(y[i]-sd[i])}`).filter(Boolean).reverse().join(" ");
-    curve = `<polygon points="${up} ${dn}" fill="${color}" opacity="0.13" stroke="none"/>` + curve;
+    curve = `<polygon points="${up} ${dn}" fill="${color}" opacity="0.12" stroke="none"/>` + curve;
   }
   let dots = "";
   x.forEach((v,i)=>{
-    const col = (redBelow!==undefined && y[i] < redBelow) ? "#f87171" : color;
-    dots += `<circle cx="${xs[i]}" cy="${yv(y[i])}" r="4.5" fill="${col}" stroke="#0a0e13" stroke-width="1.5"><title>${xLabels?xLabels[i]:v} · AUPR ${y[i].toFixed(3)}${sd&&sd[i]!=null?` ± ${sd[i].toFixed(3)}`:""}</title></circle>`;
-    if (xLabels) dots += `<text x="${xs[i]}" y="${H-padB+22}" text-anchor="middle" fill="#8ea0b5" font-size="11" font-family="var(--mono)">${xLabels[i]}</text>`;
+    const col = (redBelow!==undefined && y[i] < redBelow) ? PAL.red : color;
+    dots += `<circle cx="${xs[i]}" cy="${yv(y[i])}" r="4.5" fill="${col}" stroke="#ffffff" stroke-width="1.5"><title>${xLabels?xLabels[i]:v} · AUPR ${y[i].toFixed(3)}${sd&&sd[i]!=null?` ± ${sd[i].toFixed(3)}`:""}</title></circle>`;
+    if (xLabels) dots += `<text x="${xs[i]}" y="${H-padB+22}" text-anchor="middle" fill="${PAL.axis}" font-size="11" font-family="ui-monospace,Menlo,monospace">${xLabels[i]}</text>`;
   });
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${g}${curve}${dots}</svg>`;
+}
+
+/* ---------- atlas chart toolkit ---------- */
+
+const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+const rgbs=a=>`rgb(${a.map(v=>Math.round(v)).join(",")})`;
+function valColor(t){
+  t = Math.max(0, Math.min(1, t));
+  const lo=[253,226,226], mid=[254,240,199], hi=[187,242,208];
+  return rgbs(t<.5 ? mix(lo,mid,t*2) : mix(mid,hi,(t-.5)*2));
+}
+const S = (w,h,inner) => `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block" role="img">${inner}</svg>`;
+
+function hbars({items, w=440, rowh=26, padL=118, padR=58, ymax=null, fmt=v=>v.toFixed(3)}){
+  const H = items.length*rowh + 10;
+  const iw = w - padL - padR;
+  const max = ymax ?? (Math.max(...items.map(d=>d.value)) * 1.06 || 1);
+  let g = "";
+  items.forEach((d,i)=>{
+    const y = 5 + i*rowh + rowh/2;
+    const bw = Math.max(1, Math.max(0,d.value)/max*iw);
+    g += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="11.5" fill="${PAL.ink}">${esc(d.label)}</text>`;
+    g += `<rect x="${padL}" y="${y-8}" width="${iw}" height="16" rx="3" fill="${PAL.panel}"/>`;
+    g += `<rect x="${padL}" y="${y-8}" width="${bw}" height="16" rx="3" fill="${d.color}"><title>${esc(d.label)}: ${fmt(d.value)}${d.sd!=null?` ± ${d.sd.toFixed(4)}`:""}</title></rect>`;
+    if (d.sd != null && isFinite(d.sd))
+      g += `<line x1="${padL+Math.max(0,(d.value-d.sd))/max*iw}" x2="${padL+Math.min(max,d.value+d.sd)/max*iw}" y1="${y}" y2="${y}" stroke="${PAL.ink}" stroke-width="1.1" opacity=".55"/>`;
+    g += `<text x="${padL+bw+6}" y="${y+4}" font-size="10.5" font-family="ui-monospace,monospace" fill="${PAL.axis}">${fmt(d.value)}</text>`;
+  });
+  return S(w,H,g);
+}
+
+function divbars({items, w=440, rowh=26, padL=118, padR=58, zeroNote}){
+  const H = items.length*rowh + 10;
+  const iw = w - padL - padR;
+  const mx = Math.max(0,...items.map(d=>d.value)), mn = Math.min(0,...items.map(d=>d.value));
+  const span = (mx-mn)||1;
+  const zero = padL + iw*(mx/span);
+  const sc = v => v/span*iw;
+  let g = "";
+  items.forEach((d,i)=>{
+    const y = 5 + i*rowh + rowh/2;
+    const x1 = Math.min(zero, zero+sc(d.value)), x2 = Math.max(zero, zero+sc(d.value));
+    g += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="11.5" fill="${PAL.ink}">${esc(d.label)}</text>`;
+    g += `<rect x="${x1}" y="${y-8}" width="${Math.max(1,x2-x1)}" height="16" rx="3" fill="${d.color}"><title>${esc(d.label)}: ${(d.value>=0?"+":"")}${d.value.toFixed(3)}</title></rect>`;
+    g += `<line x1="${zero}" x2="${zero}" y1="${5+i*rowh}" y2="${5+(i+1)*rowh}" stroke="${PAL.faint}" stroke-dasharray="2 3"/>`;
+    g += `<text x="${d.value>=0?x2+6:x1-6}" y="${y+4}" text-anchor="${d.value>=0?"start":"end"}" font-size="10" font-family="ui-monospace,monospace" fill="${PAL.axis}">${(d.value>=0?"+":"")+d.value.toFixed(3)}</text>`;
+  });
+  if (zeroNote) g += `<text x="${zero}" y="${H-1}" text-anchor="middle" font-size="9.5" fill="${PAL.axis}">${zeroNote}</text>`;
+  return S(w,H,g);
+}
+
+function dumbbells({items, w=440, rowh=28, padL=118, padR=58, aName="AUROC", bName="AUPR", aColor=PAL.blue, bColor=PAL.green}){
+  const H = items.length*rowh + 34;
+  const iw = w - padL - padR;
+  const all = items.flatMap(d=>[d.a,d.b]);
+  const lo = Math.min(...all)-0.01, hi = Math.max(...all)+0.01;
+  const X = v => padL + (v-lo)/(hi-lo)*iw;
+  let g = `<circle cx="${padL-2}" cy="12" r="4.5" fill="${aColor}"/><text x="${padL+9}" y="15.5" font-size="10.5" fill="${PAL.axis}">${aName}</text>
+           <circle cx="${padL+74}" cy="12" r="4.5" fill="${bColor}"/><text x="${padL+85}" y="15.5" font-size="10.5" fill="${PAL.axis}">${bName}</text>`;
+  items.forEach((d,i)=>{
+    const y = 30 + i*rowh;
+    g += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="11.5" fill="${PAL.ink}">${esc(d.label)}</text>`;
+    g += `<line x1="${X(Math.min(d.a,d.b))}" x2="${X(Math.max(d.a,d.b))}" y1="${y}" y2="${y}" stroke="${PAL.faint}" stroke-width="2"/>`;
+    g += `<circle cx="${X(d.a)}" cy="${y}" r="4.5" fill="${aColor}" stroke="#fff" stroke-width="1.2"><title>${esc(d.label)} · ${aName} ${d.a.toFixed(3)}</title></circle>`;
+    g += `<circle cx="${X(d.b)}" cy="${y}" r="4.5" fill="${bColor}" stroke="#fff" stroke-width="1.2"><title>${esc(d.label)} · ${bName} ${d.b.toFixed(3)}</title></circle>`;
+    g += `<text x="${X(Math.max(d.a,d.b))+7}" y="${y+4}" font-size="10" font-family="ui-monospace,monospace" fill="${PAL.axis}">${d.b.toFixed(3)}</text>`;
+  });
+  return S(w,H,g);
+}
+
+function lollipops({items, w=440, rowh=26, padL=118, padR=58}){
+  const H = items.length*rowh + 10;
+  const iw = w - padL - padR;
+  const lo = Math.min(...items.map(d=>d.value-(d.sd||0)))-0.01;
+  const hi = Math.max(...items.map(d=>d.value+(d.sd||0)))+0.01;
+  const X = v => padL + (v-lo)/(hi-lo)*iw;
+  let g = "";
+  items.forEach((d,i)=>{
+    const y = 6 + i*rowh + rowh/2;
+    g += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="11.5" fill="${PAL.ink}">${esc(d.label)}</text>`;
+    g += `<line x1="${padL}" x2="${w-padR}" y1="${y}" y2="${y}" stroke="${PAL.grid}"/>`;
+    if (d.sd != null){
+      g += `<line x1="${X(d.value-d.sd)}" x2="${X(d.value+d.sd)}" y1="${y}" y2="${y}" stroke="${d.color}" stroke-width="2" opacity=".45"/>`;
+      g += `<line x1="${X(d.value-d.sd)}" x2="${X(d.value-d.sd)}" y1="${y-5}" y2="${y+5}" stroke="${d.color}" stroke-width="1.6" opacity=".55"/>`;
+      g += `<line x1="${X(d.value+d.sd)}" x2="${X(d.value+d.sd)}" y1="${y-5}" y2="${y+5}" stroke="${d.color}" stroke-width="1.6" opacity=".55"/>`;
+    }
+    g += `<circle cx="${X(d.value)}" cy="${y}" r="5" fill="${d.color}" stroke="#fff" stroke-width="1.2"><title>${esc(d.label)}: ${d.value.toFixed(4)}${d.sd!=null?` ± ${d.sd.toFixed(4)}`:""}</title></circle>`;
+    g += `<text x="${X(d.value)+9}" y="${y+4}" font-size="10" font-family="ui-monospace,monospace" fill="${PAL.axis}">${d.value.toFixed(3)}</text>`;
+  });
+  return S(w,H,g);
+}
+
+function scatter({pts, w=440, h=280, xlab="", ylab="", padL=48, padR=18, padT=16, padB=36}){
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const xlo=Math.min(...xs), xhi=Math.max(...xs), ylo=Math.min(...ys), yhi=Math.max(...ys);
+  const xpad=(xhi-xlo)*.15||.01, ypad=(yhi-ylo)*.2||.01;
+  const X=v=>padL+(v-(xlo-xpad))/((xhi+xpad)-(xlo-xpad))*iw;
+  const Y=v=>padT+(1-(v-(ylo-ypad))/((yhi+ypad)-(ylo-ypad)))*ih;
+  let g="";
+  for(let i=0;i<=4;i++){
+    const vv=ylo-ypad+((yhi+ypad)-(ylo-ypad))*i/4;
+    g+=`<line x1="${padL}" x2="${w-padR}" y1="${Y(vv)}" y2="${Y(vv)}" stroke="${PAL.grid}"/>`;
+    g+=`<text x="${padL-6}" y="${Y(vv)+4}" text-anchor="end" font-size="9.5" fill="${PAL.axis}" font-family="ui-monospace,monospace">${vv.toFixed(2)}</text>`;
+  }
+  pts.forEach(p=>{
+    const px=X(p.x), py=Y(p.y);
+    g+=`<circle cx="${px}" cy="${py}" r="5" fill="${p.color}" stroke="#fff" stroke-width="1.2"><title>${esc(p.label)} · x ${p.x.toFixed(3)} · y ${p.y.toFixed(3)}</title></circle>`;
+    const right = px > w-padR-56;
+    g+=`<text x="${right?px-8:px+8}" y="${py+3.5}" text-anchor="${right?"end":"start"}" font-size="9.5" fill="${PAL.axis}" font-weight="600">${esc(SHORT[p.label]||p.label)}</text>`;
+  });
+  g+=`<text x="${padL+iw/2}" y="${h-6}" text-anchor="middle" font-size="10.5" fill="${PAL.axis}">${xlab}</text>`;
+  g+=`<text x="12" y="${padT+ih/2}" text-anchor="middle" font-size="10.5" fill="${PAL.axis}" transform="rotate(-90 12 ${padT+ih/2})">${ylab}</text>`;
+  return S(w,h,g);
+}
+
+function slope({left, right, w=440, h=300, lLab="", rLab=""}){
+  const n=left.length, padL=96, padR=96, padT=30, padB=12;
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const Y = i => padT + (n===1?ih/2:i/(n-1)*ih);
+  const rmap = new Map(right.map((d,i)=>[d.label,i]));
+  let g = `<text x="${padL-30}" y="16" text-anchor="middle" font-size="11" fill="${PAL.ink}" font-weight="700">${lLab}</text>
+           <text x="${w-padR+30}" y="16" text-anchor="middle" font-size="11" fill="${PAL.ink}" font-weight="700">${rLab}</text>`;
+  left.forEach((d,i)=>{
+    if (!rmap.has(d.label)) return;
+    const j = rmap.get(d.label), y1=Y(i), y2=Y(j);
+    const hi = d.label==="iDrug" || d.label==="iDrug-official";
+    g += `<polyline points="${padL},${y1} ${w-padR},${y2}" fill="none" stroke="${d.color}" stroke-width="${hi?3:1.8}" opacity="${hi?1:.72}"/>`;
+    g += `<circle cx="${padL}" cy="${y1}" r="4" fill="${d.color}"><title>${d.label} · ${lLab} ${d.value.toFixed(3)} · rank ${i+1}</title></circle>`;
+    g += `<circle cx="${w-padR}" cy="${y2}" r="4" fill="${d.color}"><title>${d.label} · ${rLab} ${right[j].value.toFixed(3)} · rank ${j+1}</title></circle>`;
+    g += `<text x="${padL-8}" y="${y1+4}" text-anchor="end" font-size="10" fill="${PAL.ink}">${SHORT[d.label]||d.label} ${d.value.toFixed(2)}</text>`;
+    g += `<text x="${w-padR+8}" y="${y2+4}" font-size="10" fill="${PAL.ink}">${right[j].value.toFixed(2)} ${SHORT[d.label]||d.label}</text>`;
+  });
+  return S(w,h,g);
+}
+
+function multiline({x, series, xLabels, w=440, h=250, padL=48, padR=62, padT=16, padB=32, ref, refLabel, prettify=null}){
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const all=series.flatMap(s=>s.y);
+  const lo=Math.max(0,Math.min(...all)-0.02), hi=Math.max(...all)+0.02;
+  const X=i=>padL+(x.length===1?iw/2:i/(x.length-1)*iw);
+  const Y=v=>padT+(1-(v-lo)/(hi-lo))*ih;
+  let g="";
+  for(let i=0;i<=4;i++){
+    const vv=lo+(hi-lo)*i/4;
+    g+=`<line x1="${padL}" x2="${w-padR}" y1="${Y(vv)}" y2="${Y(vv)}" stroke="${PAL.grid}"/>`;
+    g+=`<text x="${padL-6}" y="${Y(vv)+4}" text-anchor="end" font-size="9.5" fill="${PAL.axis}" font-family="ui-monospace,monospace">${vv.toFixed(2)}</text>`;
+  }
+  if(ref!=null){
+    g+=`<line x1="${padL}" x2="${w-padR}" y1="${Y(ref)}" y2="${Y(ref)}" stroke="${PAL.faint}" stroke-dasharray="5 4"/>`;
+    if(refLabel) g+=`<text x="${w-padR-2}" y="${Y(ref)-5}" text-anchor="end" font-size="9.5" fill="${PAL.axis}">${refLabel}</text>`;
+  }
+  x.forEach((v,i)=>{
+    g+=`<text x="${X(i)}" y="${h-padB+18}" text-anchor="middle" font-size="10" fill="${PAL.axis}" font-family="ui-monospace,monospace">${xLabels?xLabels[i]:v}</text>`;
+  });
+  series.forEach((s,si)=>{
+    g+=`<polyline points="${s.y.map((v,i)=>`${X(i)},${Y(v)}`).join(" ")}" fill="none" stroke="${s.color}" stroke-width="2.2" opacity=".9"/>`;
+    s.y.forEach((v,i)=>{
+      g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3.2" fill="${s.color}" stroke="#fff" stroke-width="1"><title>${s.name} · x ${x[i]} → ${(prettify||(z=>z.toFixed(3)))(v)}</title></circle>`;
+    });
+    g+=`<text x="${w-padR+6}" y="${Y(s.y[s.y.length-1])+3.5}" font-size="9.5" font-weight="700" fill="${s.color}">${s.short||s.name}</text>`;
+  });
+  return S(w,h,g);
+}
+
+function hgroups({rows, series, w=440, rowh=31, padL=118, padR=52}){
+  const H = rows.length*rowh + 32;
+  const iw = w - padL - padR;
+  const max = Math.max(...series.flatMap(s=>s.vals))*1.06||1;
+  const bh=6, gap=2;
+  let g = "";
+  series.forEach((s,j)=>{
+    g += `<rect x="${padL+j*86}" y="6" width="9" height="9" rx="2" fill="${s.color}"/><text x="${padL+j*86+13}" y="14.5" font-size="10.5" fill="${PAL.axis}">${s.name}</text>`;
+  });
+  rows.forEach((lab,i)=>{
+    const y0 = 28 + i*rowh;
+    g += `<text x="${padL-8}" y="${y0+13}" text-anchor="end" font-size="11" fill="${PAL.ink}">${esc(lab)}</text>`;
+    series.forEach((s,j)=>{
+      const v = s.vals[i];
+      const y = y0 + j*(bh+gap);
+      const bw = Math.max(1, v/max*iw);
+      g += `<rect x="${padL}" y="${y}" width="${iw}" height="${bh}" rx="2" fill="${PAL.panel}"/>`;
+      g += `<rect x="${padL}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${s.color}"><title>${esc(lab)} · ${s.name}: ${v.toFixed(3)}</title></rect>`;
+      g += `<text x="${padL+bw+5}" y="${y+bh-0.2}" font-size="9" font-family="ui-monospace,monospace" fill="${PAL.axis}">${v.toFixed(3)}</text>`;
+    });
+  });
+  return S(w,H,g);
+}
+
+function vbars({cats, values, colors, w=320, h=200, title=""}){
+  const padL=46,padR=12,padT=26,padB=36,iw=w-padL-padR,ih=h-padT-padB;
+  const lo=Math.min(...values)-0.012, hi=Math.max(...values)+0.012;
+  const Y=v=>padT+(1-(v-lo)/(hi-lo))*ih;
+  let g="";
+  for(let i=0;i<=3;i++){
+    const vv=lo+(hi-lo)*i/3;
+    g+=`<line x1="${padL}" x2="${w-padR}" y1="${Y(vv)}" y2="${Y(vv)}" stroke="${PAL.grid}"/>`;
+    g+=`<text x="${padL-6}" y="${Y(vv)+3.5}" text-anchor="end" font-size="9.5" fill="${PAL.axis}" font-family="ui-monospace,monospace">${vv.toFixed(2)}</text>`;
+  }
+  const bw=iw/cats.length*0.52;
+  cats.forEach((c,i)=>{
+    const cx=padL+(i+0.5)*iw/cats.length;
+    g+=`<rect x="${cx-bw/2}" y="${Y(values[i])}" width="${bw}" height="${Math.max(1,Y(lo)-Y(values[i]))}" rx="3" fill="${colors[i]}"><title>${c}: ${values[i].toFixed(3)}</title></rect>`;
+    g+=`<text x="${cx}" y="${Y(values[i])-5}" text-anchor="middle" font-size="10" font-family="ui-monospace,monospace" fill="${PAL.axis}">${values[i].toFixed(3)}</text>`;
+    g+=`<text x="${cx}" y="${h-padB+18}" text-anchor="middle" font-size="10.5" fill="${PAL.axis}">${c}</text>`;
+  });
+  if (title) g+=`<text x="${padL}" y="16" font-size="10.5" fill="${PAL.axis}">${title}</text>`;
+  return S(w,h,g);
+}
+
+function heatTable({rows, cols, vals, fmt=(v)=>v.toFixed(3), colorFn, rowLab="", titleFn, note=""}){
+  const flat = vals.flat();
+  const lo = Math.min(...flat), hi = Math.max(...flat);
+  const cfn = colorFn || (v => valColor((v-lo)/((hi-lo)||1)));
+  let html=`<table class="heat"><thead><tr><th class="lbl">${rowLab}</th>${cols.map(c=>`<th class="lbl">${c}</th>`).join("")}</tr></thead><tbody>`;
+  vals.forEach((row,i)=>{
+    html+=`<tr><th class="lbl">${rows[i]}</th>`;
+    row.forEach((v,j)=>{
+      html+=`<td class="cell" style="background:${cfn(v)}" title="${titleFn?esc(titleFn(i,j,v)):""}">${fmt(v)}</td>`;
+    });
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table>`;
+  return html + (note?`<div class="fignote">${note}</div>`:"");
+}
+
+function radar({axes, series, w=330, h=300, fmt=v=>v.toFixed(3)}){
+  const cx=w/2, cy=h/2+4, R=Math.min(w,h)/2-62;
+  const n=axes.length;
+  const mins=axes.map((_,j)=>Math.min(...series.map(s=>s.vals[j])));
+  const maxs=axes.map((_,j)=>Math.max(...series.map(s=>s.vals[j])));
+  const norm=(j,v)=>(maxs[j]-mins[j])<1e-9?0.6:(v-mins[j])/(maxs[j]-mins[j]);
+  const pt=(j,rr)=>{const a=-Math.PI/2+j*2*Math.PI/n; return [cx+rr*Math.cos(a), cy+rr*Math.sin(a)];};
+  let g="";
+  for(let ring=1;ring<=4;ring++){
+    g+=`<polygon points="${axes.map((_,j)=>pt(j,R*ring/4).map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="${PAL.grid}"/>`;
+  }
+  axes.forEach((ax,j)=>{
+    const [x,y]=pt(j,R);
+    g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${PAL.grid}"/>`;
+    const [lx,ly]=pt(j,R+18);
+    g+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" font-size="9" fill="${PAL.axis}">${esc(ax)}</text>`;
+  });
+  series.forEach(s=>{
+    const pts=s.vals.map((v,j)=>pt(j,Math.max(6,R*norm(j,v))).map(z=>z.toFixed(1)).join(",")).join(" ");
+    g+=`<polygon points="${pts}" fill="${s.color}" opacity=".08" stroke="none"/>`;
+    g+=`<polygon points="${pts}" fill="none" stroke="${s.color}" stroke-width="1.8" opacity=".92"/>`;
+    s.vals.forEach((v,j)=>{
+      const [px,py]=pt(j,Math.max(6,R*norm(j,v)));
+      g+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${s.color}"><title>${s.name} · ${axes[j]}: ${fmt(v)}</title></circle>`;
+    });
+  });
+  return S(w,h,g);
+}
+
+function gaugeFig({value, ref, max, w=300, h=182}){
+  const cx=w/2, cy=h-26, R=96;
+  const P=(v,r=R)=>{const a=Math.PI*(1-Math.max(0,Math.min(max,v))/max); return [cx+r*Math.cos(a), cy-r*Math.sin(a)];};
+  const arc=(v1,v2,color,width)=>{
+    const [x1,y1]=P(v1),[x2,y2]=P(v2);
+    const large = (v2-v1)/max>0.5?1:0;
+    return `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${R} ${R} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round"/>`;
+  };
+  let g = arc(0,max,"#e2e8f0",14);
+  g += arc(0,Math.min(value,max),value>=ref?PAL.green:PAL.red,14);
+  [[0,"0"],[ref,"0.23 (README)"],[max,String(max)]].forEach(([v,l])=>{
+    const [x1,y1]=P(v,R+11),[x2,y2]=P(v,R+5),[xt,yt]=P(v,R+30);
+    g+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${PAL.axis}"/>`;
+    g+=`<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" text-anchor="middle" font-size="9" fill="${PAL.axis}">${l}</text>`;
+  });
+  const [nx,ny]=P(value,R-8);
+  g+=`<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="${PAL.ink}" stroke-width="2.2" stroke-linecap="round"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="5" fill="${PAL.ink}"/>`;
+  g+=`<text x="${cx}" y="${cy-16}" text-anchor="middle" font-size="20" font-weight="800" font-family="ui-monospace,monospace" fill="${value>=ref?PAL.green:PAL.red}">${value.toFixed(3)}</text>`;
+  return S(w,h,g);
+}
+
+let FIG = 0;
+function fig(grid, title, body, note){
+  FIG++;
+  const d = document.createElement("div");
+  d.className = "figcard";
+  d.innerHTML = `<div class="fighead"><span class="figno">fig ${String(FIG).padStart(3,"0")}</span><span class="figtitle">${title}</span></div>`
+    + `<div class="figbody">${body}</div>`
+    + (note?`<div class="fignote">${note}</div>`:"");
+  grid.appendChild(d);
+}
+
+function renderAtlas(){
+  const gA=$("#gA"), gB=$("#gB"), gC=$("#gC"), gD=$("#gD");
+  if(!gA) return;
+
+  $("#atlasLegend").innerHTML = METHODS.map(m=>`<span><i style="background:${MCOL[m]}"></i>${m}</span>`).join("")
+    + `<span><i style="background:${PAL.amber}"></i>“worse than best” shading in gap charts</span>`;
+
+  /* A · pair prediction — 40 figures */
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]) for (const metric of ["auroc","aupr"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const items = METHODS.map(m=>({label:m, value:mm(tbl[m][metric]), sd:ss(tbl[m][metric]), color:MCOL[m]}));
+    const best = items.reduce((a,b)=>a.value>=b.value?a:b);
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · ${metric.toUpperCase()} by method`, hbars({items}),
+      `<b>best:</b> ${best.label} ${best.value.toFixed(3)} · Popularity ${mm(tbl.Popularity[metric]).toFixed(3)} · whisker = ± fold s.d.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const items = METHODS.map(m=>({label:m, a:mm(tbl[m].auroc), b:mm(tbl[m].aupr)}));
+    const spread = items.map(d=>d.a-d.b);
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · AUROC vs AUPR`, dumbbells({items}),
+      `AUROC sits above AUPR for every method — the imbalance signature of uniform negatives. Widest gap: ${items[spread.indexOf(Math.max(...spread))].label} (+${Math.max(...spread).toFixed(3)}); narrowest: ${items[spread.indexOf(Math.min(...spread))].label} (+${Math.min(...spread).toFixed(3)}).`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const items = METHODS.map(m=>({label:m, value:mm(tbl[m].aupr), sd:ss(tbl[m].aupr), color:MCOL[m]}));
+    const sorted = items.slice().sort((a,b)=>a.sd-b.sd);
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · AUPR ± fold s.d.`, lollipops({items}),
+      `Whiskers are the fold-to-fold standard deviation. Tightest: ${sorted[0].label} (±${sorted[0].sd.toFixed(4)}); widest: ${sorted[sorted.length-1].label} (±${sorted[sorted.length-1].sd.toFixed(4)}).`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const vals = METHODS.map(m=>({label:m, v:mm(tbl[m].aupr)}));
+    const top = Math.max(...vals.map(d=>d.v));
+    const items = vals.map((d,i)=>({label:d.label, value:top-d.v, color: d.v===top?PAL.green:valColor(1-(top-d.v)/0.125)}));
+    const worst = vals.reduce((a,b)=>a.v<=b.v?a:b);
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · gap to the best AUPR`, hbars({items, ymax:0.14}),
+      `0 = best (${vals.reduce((a,b)=>a.v>=b.v?a:b).label}). Biggest gap: ${worst.label} at −${(top-worst.v).toFixed(3)}. Shading runs green → amber → red as the gap grows.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const pts = METHODS.map(m=>({x:mm(tbl[m].auroc), y:mm(tbl[m].aupr), label:m, color:MCOL[m]}));
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · AUPR vs AUROC scatter`, scatter({pts, xlab:"AUROC", ylab:"AUPR"}),
+      `Points on the 45° diagonal would mean balanced behaviour; everything sits below it because positives are ~1:1 but the positive class is the sparse one.`);
+  }
+
+  for (const task of ["drug_disease","drug_target"]) for (const metric of ["auroc","aupr"]){
+    const L = D.real[`ctd_pair_${task}`], R = D.real[`gold_pair_${task}`];
+    const mk = tbl => byShort(METHODS.map(m=>[m, mm(tbl[m][metric])])).map(([label,value])=>({label, value, color:MCOL[label]}));
+    fig(gA, `${TSL[task]} · ${metric.toUpperCase()} ranks, CTD → gold`, slope({left:mk(L), right:mk(R), lLab:"CTD + DrugBank", rLab:"Gottlieb gold"}),
+      `Lines cross where a method's rank is dataset-specific. iDrug / iDrug-official are drawn thicker — RLS-Kron takes the top spot on gold, Popularity falls from top-three to last.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const sig = METHODS.map(m=>({label:m, value:ss(tbl[m].aupr) ?? 0}));
+    const maxS = Math.max(...sig.map(d=>d.value));
+    const items = sig.map(d=>({label:d.label, value:d.value, color:valColor(1-d.value/maxS)}));
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · AUPR fold variability`, hbars({items}),
+      `Smaller bars = more stable ranking across the five folds. Min ${Math.min(...sig.map(d=>d.value)).toFixed(4)} (${sig.reduce((a,b)=>a.value<=b.value?a:b).label}), max ${maxS.toFixed(4)} (${sig.reduce((a,b)=>a.value>=b.value?a:b).label}).`);
+  }
+
+  for (const m of METHODS){
+    const combos = [];
+    for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"])
+      combos.push([`${ds.toUpperCase()} ${TSL[task].replace("drug–","")}`, mm(D.real[`${ds}_pair_${task}`][m].aupr)]);
+    const items = combos.map(([label,value])=>({label, value, color:MCOL[m]}));
+    fig(gA, `profile · ${m} · AUPR across the four pair tasks`, hbars({items, padL:132}),
+      `Same method, four benchmark cells: ${combos.map(([l,v])=>`${l} ${v.toFixed(3)}`).join(" · ")}.`);
+  }
+
+  /* B · cold start — 40 figures */
+  for (const ds of ["ctd","gold"]) for (const scen of ["newdrug","newcol"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_${scen}_${task}`];
+    const series = ["5","10","15"].map((k,ix)=>({name:`P@${k}`, color:[PAL.cyan,PAL.green,PAL.lime][ix], vals:METHODS.map(m=>mm(tbl[m][k]))}));
+    fig(gB, `${DSL[ds]} · ${SCL[scen]} · ${TSL[task]} · P@5/10/15`, hgroups({rows:METHODS, series}),
+      `Cold-start precision on held-out ${scen==="newdrug"?"drug rows":"disease/target columns"}; three bars per method, one per k.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]) for (const scen of ["newdrug","newcol"]){
+    const tbl = D.real[`${ds}_${scen}_${task}`];
+    const series = METHODS.map(m=>({name:m, short:SHORT[m], color:MCOL[m], y:["5","10","15"].map(k=>mm(tbl[m][k]))}));
+    fig(gB, `${DSL[ds]} · ${SCL[scen]} · ${TSL[task]} · P@k curves`, multiline({x:["P@5","P@10","P@15"], series, xLabels:["P@5","P@10","P@15"]}),
+      `Eight methods, one line each; every curve decays from P@5 to P@15, ${methodsNote(tbl)}`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]) for (const scen of ["newdrug","newcol"]){
+    const tbl = D.real[`${ds}_${scen}_${task}`];
+    const vals = METHODS.map(m=>["5","10","15"].map(k=>mm(tbl[m][k])));
+    fig(gB, `${DSL[ds]} · ${SCL[scen]} · ${TSL[task]} · method × k heatmap`,
+      heatTable({rows:METHODS, cols:["P@5","P@10","P@15"], vals, rowLab:scen==="newdrug"?"drug ↓":"new col ↓",
+        titleFn:(i,j,v)=>`${METHODS[i]} ${["P@5","P@10","P@15"][j]}: ${v.toFixed(3)}`}),
+      `Greener = higher precision. Column-wise best: ${["5","10","15"].map(k=>{let b=-1,n="";for(const m of METHODS){const v=mm(tbl[m][k]);if(v>b){b=v;n=m}}return `P@${k} ${n} (${b.toFixed(3)})`}).join(" · ")}.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const P = D.real[`${ds}_pair_${task}`], N = D.real[`${ds}_newdrug_${task}`];
+    const pts = METHODS.map(m=>({x:mm(P[m].aupr), y:mm(N[m]["10"]), label:m, color:MCOL[m]}));
+    fig(gB, `${DSL[ds]} · ${TSL[task]} · pair AUPR vs new-drug P@10`, scatter({pts, xlab:"pair AUPR", ylab:"new-drug P@10"}),
+      `Good pair predictor does not imply good cold-start predictor — ${topScatter(pts)}.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const N = D.real[`${ds}_newdrug_${task}`];
+    const pop = mm(N.Popularity["10"]);
+    const items = METHODS.map(m=>{
+      const v = mm(N[m]["10"])-pop;
+      return {label:m, value:v, color: m==="Popularity"?PAL.slate:(v>=0?PAL.green:PAL.red)};
+    });
+    fig(gB, `${DSL[ds]} · ${TSL[task]} · new-drug P@10 vs Popularity`, divbars({items, zeroNote:"0 = Popularity"}),
+      `Positive = beats the degree baseline on cold-start precision. Popularity itself is the zero line; matched or beaten by ${items.filter(d=>d.value>=0&&d.label!=="Popularity").length} of 7 methods.`);
+  }
+
+  for (const m of METHODS){
+    const vals = [["ctd","gold"].map(ds=>["drug_disease","drug_target"].map(task=>mm(D.real[`${ds}_newdrug_${task}`][m]["10"])))];
+    fig(gB, `profile · ${m} · new-drug P@10, 2 × 2`, heatTable({rows:["CTD","gold"], cols:["drug–disease","drug–target"], vals:vals[0], rowLab:"P@10 ↓"}),
+      `One method, all four cold-start cells — the winner flips by cell, which is the point of a gallery.`);
+  }
+
+  /* C · sweeps — 11 figures */
+  const sw = D.sweeps;
+  if (!sw){
+    $("#headC").style.display = "none";
+  } else {
+    const refPair = sw.ref_grmf_style ? sw.ref_grmf_style.pair_aupr[0] : null;
+    const betas = sw.beta_sweep.betas, bau = sw.beta_sweep.aupr.map(mm), bsd = sw.beta_sweep.aupr.map(ss);
+    const bmax = bau.indexOf(Math.max(...bau));
+    fig(gC, "β sweep · drug–disease AUPR", multiline({x:betas.map(String), xLabels:betas.map(String),
+        series:[{name:"iDrug", short:"iDrug", color:PAL.green, y:bau}], ref:refPair, refLabel:"β = 0 ablation"}),
+      `Best β = ${betas[bmax]} → ${bau[bmax].toFixed(3)}; within this range the curve rises monotonically and does not collapse, unlike the synthetic generator.`);
+    fig(gC, "β sweep · fold s.d.", hbars({items:betas.map((b,i)=>({label:`β = ${b}`, value:bsd[i]??0, color:valColor(1-(bsd[i]??0)/Math.max(...bsd))}))}),
+      `Stability across folds improves as β grows — the cross-network term not only lifts the mean, it de-noises the ranking.`);
+    const ws = sw.w_sweep.w, wau = sw.w_sweep.aupr.map(mm), wsd = sw.w_sweep.aupr.map(ss);
+    const wmax = wau.indexOf(Math.max(...wau));
+    fig(gC, "w sweep · drug–disease AUPR", multiline({x:ws.map(String), xLabels:ws.map(String),
+        series:[{name:"iDrug", short:"iDrug", color:PAL.cyan, y:wau}]}),
+      `Best w here: ${ws[wmax]} → ${wau[wmax].toFixed(3)}. The paper's default w = 0.3 scores ${wau[ws.indexOf(0.3)]?.toFixed(3) ?? "—"}; small w favours this protocol.`);
+    fig(gC, "w sweep · fold s.d.", hbars({items:ws.map((w,i)=>({label:`w = ${w}`, value:wsd[i]??0, color:valColor(1-(wsd[i]??0)/Math.max(...wsd))}))}),
+      `Mean and stability disagree: w = 0.05 has the best AUPR yet the widest whisker in the sweep.`);
+    fig(gC, "α × β grid · AUPR", heatTable({rows:sw.alpha_beta_grid.alphas.map(a=>`α = ${a}`), cols:sw.alpha_beta_grid.betas.map(b=>`β = ${b}`),
+        vals:sw.alpha_beta_grid.aupr.map(r=>r.map(mm)), rowLab:"α ↓ / β →",
+        titleFn:(i,j,v)=>`α=${sw.alpha_beta_grid.alphas[i]} β=${sw.alpha_beta_grid.betas[j]} → ${v.toFixed(3)}`}),
+      `3 × 3 trimmed grid. Best cell α = 0.01; β matters less than α on real data. Paper settings (0.001, 0.001) are the middle cell.`);
+    sw.alpha_beta_grid.alphas.forEach((a,i)=>{
+      const row = sw.alpha_beta_grid.aupr[i].map(mm);
+      fig(gC, `α = ${a} · AUPR across β`, vbars({cats:sw.alpha_beta_grid.betas.map(b=>String(b)), values:row,
+          colors:row.map(v=>valColor((v-Math.min(...row))/((Math.max(...row)-Math.min(...row))||1)))}),
+        `A single row of the grid, drawn as bars: ${row.map((v,j)=>`β ${sw.alpha_beta_grid.betas[j]} → ${v.toFixed(3)}`).join(" · ")}.`);
+    });
+    const wl = sw.withhold_links, wa = sw.withhold_anchors;
+    const lv = wa.levels.map(v=>`${Math.round(v*100)}%`);
+    fig(gC, "withhold anchors · pair AUPR", multiline({x:lv, xLabels:lv,
+        series:[{name:"iDrug", short:"iDrug", color:PAL.green, y:wa.iDrug_pair_aupr.map(mm)}], ref:refPair, refLabel:"β = 0 ablation"}),
+      `Keep only 0 / 50 / 100 % of the anchor links: the score is essentially flat — on this data the bridge is robust to anchor loss within this range.`);
+    fig(gC, "withhold other-domain links · pair AUPR", multiline({x:lv, xLabels:lv,
+        series:[{name:"iDrug", short:"iDrug", color:PAL.cyan, y:wl.iDrug_pair_aupr.map(mm)}], ref:refPair, refLabel:"β = 0 ablation"}),
+      `Same for the other domain's edges. Both curves sit above the β = 0 ablation, so the cross-network term keeps contributing even at 0 % kept.`);
+    fig(gC, "withhold · both curves", multiline({x:lv, xLabels:lv,
+        series:[{name:"anchor links kept", short:"anchors", color:PAL.green, y:wa.iDrug_pair_aupr.map(mm)},
+                {name:"other-domain links kept", short:"links", color:PAL.cyan, y:wl.iDrug_pair_aupr.map(mm)}], ref:refPair, refLabel:"β = 0 ablation"}),
+      `${Math.max(...wa.iDrug_pair_aupr.map(mm)).toFixed(3)} vs ${Math.max(...wl.iDrug_pair_aupr.map(mm)).toFixed(3)} max — anchor degradation barely moves the needle at these levels.`);
+  }
+
+  /* D · profiles, variability, data, paper check — 14 figures */
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const P = D.real[`${ds}_pair_${task}`], ND = D.real[`${ds}_newdrug_${task}`], NC = D.real[`${ds}_newcol_${task}`];
+    const others = METHODS.filter(m=>!m.startsWith("iDrug")&&m!=="GRMF-style"&&m!=="Popularity");
+    const bestOther = others.reduce((a,b)=>mm(P[a].aupr)>=mm(P[b].aupr)?a:b);
+    const pick = m => [mm(P[m].auroc), mm(P[m].aupr), mm(ND[m]["5"]), mm(ND[m]["10"]), mm(NC[m]["5"]), mm(NC[m]["10"])];
+    const series = [
+      {name:"iDrug", color:PAL.green, vals:pick("iDrug")},
+      {name:"iDrug-official", color:PAL.teal, vals:pick("iDrug-official")},
+      {name:`best baseline (${bestOther})`, color:PAL.blue, vals:pick(bestOther)},
+      {name:"Popularity", color:PAL.slate, vals:pick("Popularity")}
+    ];
+    fig(gD, `${DSL[ds]} · ${TSL[task]} · method radar`, radar({axes:["AUROC","AUPR","P@5 new drug","P@10 new drug","P@5 new col","P@10 new col"], series}),
+      `Axes independently min–max scaled across the four methods shown — shape = where a method is relatively strong, not absolute scores.`);
+  }
+
+  for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+    const tbl = D.real[`${ds}_pair_${task}`];
+    const vals = [METHODS.map(m=>ss(tbl[m].auroc)??0), METHODS.map(m=>ss(tbl[m].aupr)??0)];
+    const mx = Math.max(...vals.flat());
+    fig(gD, `${DSL[ds]} · ${TSL[task]} · fold s.d. heatmap`,
+      heatTable({rows:["AUROC σ","AUPR σ"], cols:METHODS.map(m=>SHORT[m]), vals, rowLab:"σ ↓",
+        fmt:v=>v.toFixed(4), colorFn:v=>valColor(1-v/mx),
+        titleFn:(i,j,v)=>`${METHODS[j]} · ${i===0?"AUROC":"AUPR"} σ = ${v.toFixed(4)}`}),
+      `Paler = more stable across folds. Max σ = ${mx.toFixed(4)}.`);
+  }
+
+  const DATASTATS = [
+    {name:"CTD + DrugBank", dd:[1321,3966,111481], dt:[946,3610,10234], anchors:469},
+    {name:"Gottlieb gold", dd:[593,313,1933], dt:[593,1011,3427], anchors:593}
+  ];
+  const rowLabels = [];
+  const rowVals = [];
+  DATASTATS.forEach(s=>{
+    ["drug–disease","drug–target"].forEach((dom,di)=>{
+      const [r,c] = di===0?s.dd:s.dt;
+      rowLabels.push(`${s.name.split(" ")[0].toLowerCase()} · ${dom} rows`, `${s.name.split(" ")[0].toLowerCase()} · ${dom} cols`);
+      rowVals.push(r,c);
+    });
+  });
+  const I = v => v.toLocaleString("en-US");
+  fig(gD, "dataset anatomy · matrix shape", hbars({items:rowLabels.map((l,i)=>({label:l, value:rowVals[i], color:i%2?PAL.cyan:PAL.slate})), padL:168, fmt:I}),
+    `Row/column counts of the four real matrices. CTD is the paper-scale block (1,321 × 3,966), gold is a tenth of it.`);
+  fig(gD, "dataset anatomy · observed links", hbars({items:[
+      {label:"ctd · drug–disease", value:111481, color:PAL.green},
+      {label:"ctd · drug–target", value:10234, color:PAL.teal},
+      {label:"gold · drug–disease", value:1933, color:PAL.blue},
+      {label:"gold · drug–target", value:3427, color:PAL.purple}], padL:150, fmt:I}),
+    `Real interaction counts as released by the authors: 111,481 CTD drug–disease links dominate everything else.`);
+  const dens = DATASTATS.flatMap(s=>[["dd",s.dd],["dt",s.dt]].map(([tag,[r,c,l]])=>({
+    label:`${s.name.split(" ")[0].toLowerCase()} · ${tag==="dd"?"drug–disease":"drug–target"}`, value:l/(r*c)*100})));
+  fig(gD, "dataset anatomy · density", hbars({items:dens.map((d,i)=>({label:d.label, value:d.value, color:[PAL.green,PAL.teal,PAL.blue,PAL.purple][i]})), padL:158}),
+    `Observed links ÷ matrix cells, in %: all four blocks are < 3 % dense — this is why negative sampling is the benchmark's soft spot.`);
+  fig(gD, "dataset anatomy · shared anchor drugs", hbars({items:DATASTATS.map((s,i)=>({label:s.name, value:s.anchors, color:[PAL.green,PAL.blue][i]})), ymax:660, padL:150, fmt:I}),
+    `Drugs appearing in both domains: 469 of 946 CTD drugs are anchors; the gold standard anchors all 593.`);
+  {
+    const combos = [];
+    for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
+      const P = D.real[`${ds}_pair_${task}`];
+      combos.push({label:`${DSL[ds].split(" ")[0].toLowerCase()} · ${TSL[task]}`, a:mm(P["iDrug"].aupr), b:mm(P["GRMF-style"].aupr)});
+    }
+    const gaps = combos.map(c=>c.a-c.b);
+    fig(gD, "iDrug vs its β = 0 ablation · AUPR", dumbbells({items:combos, aName:"iDrug", bName:"β = 0 ablation", aColor:PAL.green, bColor:PAL.lime}),
+      `Net effect of the cross-network term per benchmark cell: ${gaps.map(g=>(g>=0?"+":"−")+Math.abs(g).toFixed(3)).join(" · ")}. It buys most on CTD drug–disease, and on CTD drug–target it costs 0.012 — not uniformly helpful at these settings.`);
+  }
+  if (D.real.paper_check_newdrug_official_p20){
+    const v = mm(D.real.paper_check_newdrug_official_p20["iDrug-official"]["20"]);
+    fig(gD, "official solver · P@20 at the authors' settings", gaugeFig({value:v, ref:0.23, max:0.5}),
+      `My port of the authors' solver scores ${v.toFixed(3)} against the README's printed <b>0.23</b> on the same documented example (rank 70/70, α = β = γ = 0.01, w = 0.3, k = 20).`);
+  }
+
+  $("#atlasCount").textContent = FIG;
+}
+
+function methodsNote(tbl){
+  const k = "10";
+  let bi=-Infinity, bn="", wi=Infinity, wn="";
+  for (const m of METHODS){ const v=mm(tbl[m][k]); if(v>bi){bi=v;bn=m} if(v<wi){wi=v;wn=m} }
+  return `P@10 runs from ${wn} (${wi.toFixed(3)}) to ${bn} (${bi.toFixed(3)})`;
+}
+function topScatter(pts){
+  const a = pts.reduce((x,y)=>x.y>=y.y?x:y), b = pts.reduce((x,y)=>x.x>=y.x?x:y);
+  return a.label===b.label ? `${a.label} tops both axes` : `${b.label} leads pair AUPR while ${a.label} leads cold-start P@10`;
 }
 
 function render(){
@@ -596,7 +1191,6 @@ function render(){
   const sw = D.sweeps;
   if (sw.settings && sw.settings.iters) $("#swIters").textContent = sw.settings.iters;
   const refPair = sw.ref_grmf_style ? sw.ref_grmf_style.pair_aupr[0] : null;
-  const refND = sw.ref_grmf_style ? sw.ref_grmf_style.newdrug_p10 : null;
 
   if (sw.beta_sweep){
     const betas = sw.beta_sweep.betas, au = sw.beta_sweep.aupr;
@@ -604,7 +1198,7 @@ function render(){
     const lo = Math.min(...y, refPair ?? Math.min(...y)) - 0.05;
     const hi = Math.max(...y, refPair ?? Math.max(...y)) + 0.03;
     lineChart($("#figBeta"), {
-      x: betas.map(String), y, sd, xLabels: betas.map(String), color:"#4ade80",
+      x: betas.map(String), y, sd, xLabels: betas.map(String), color:PAL.green,
       yMin: lo, yMax: hi, ref: refPair, refLabel: refPair!==null ? "β=0 (GRMF-style)" : "",
       redBelow: refPair!==null ? refPair - 0.1 : undefined});
     const bmax = y.indexOf(Math.max(...y));
@@ -618,7 +1212,7 @@ function render(){
     const ws = sw.w_sweep.w, au = sw.w_sweep.aupr;
     const y = au.map(mm), sd = au.map(ss);
     const lo = Math.min(...y) - 0.03, hi = Math.max(...y) + 0.03;
-    lineChart($("#figW"), {x: ws.map(String), y, sd, xLabels: ws.map(String), color:"#22d3ee", yMin: lo, yMax: hi});
+    lineChart($("#figW"), {x: ws.map(String), y, sd, xLabels: ws.map(String), color:PAL.cyan, yMin: lo, yMax: hi});
     const wmax = y.indexOf(Math.max(...y));
     $("#wNote").innerHTML = `Best w here: <span class="mono">${ws[wmax]}</span> → ${y[wmax].toFixed(3)} AUPR.
       The paper's default w = 0.3 scores ${y[ws.indexOf(0.3)]!==undefined?y[ws.indexOf(0.3)].toFixed(3):"—"} on this protocol.`;
@@ -628,14 +1222,7 @@ function render(){
     const h = sw.alpha_beta_grid;
     const vals = h.aupr.flat().map(mm);
     const lo = Math.min(...vals), hi = Math.max(...vals);
-    const mix = (a,b,t)=>a+(b-a)*t;
-    const color = v => {
-      const t = Math.min(1, Math.max(0,(v-lo)/(hi-lo || 1)));
-      const r = t<0.5 ? mix(200,250,t*2) : mix(250,74,(t-0.5)*2);
-      const g2 = t<0.5 ? mix(90,204,t*2) : mix(204,222,(t-0.5)*2);
-      const b = t<0.5 ? mix(90,21,t*2) : mix(21,128,(t-0.5)*2);
-      return `rgb(${r|0},${g2|0},${b|0})`;
-    };
+    const color = v => valColor((v-lo)/((hi-lo)||1));
     let html = `<table class="heat"><thead><tr><th></th><th colspan="${h.betas.length}">β →</th></tr><tr><th class="lbl">α ↓</th>${h.betas.map(b=>`<th class="lbl">${b}</th>`).join("")}</tr></thead><tbody>`;
     h.aupr.forEach((row,i)=>{
       html += `<tr><th class="lbl">${h.alphas[i]}</th>`;
@@ -658,17 +1245,17 @@ function render(){
       const xs=keep.map((_,i)=>padL+i/(keep.length-1)*iw);
       let g="";
       for(let i=0;i<=4;i++){const val=yMin+(yMax-yMin)*i/4,yy=yv(val);
-        g+=`<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="#1e2936"/><text x="${padL-8}" y="${yy+4}" text-anchor="end" fill="#5b6b7e" font-size="10" font-family="var(--mono)">${val.toFixed(2)}</text>`;}
-      if (ref!=null) g+=`<line x1="${padL}" x2="${W-padR}" y1="${yv(ref)}" y2="${yv(ref)}" stroke="#8ea0b5" stroke-dasharray="5 5"/>`;
+        g+=`<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="${PAL.grid}"/><text x="${padL-8}" y="${yy+4}" text-anchor="end" fill="${PAL.axis}" font-size="10" font-family="ui-monospace,Menlo,monospace">${val.toFixed(2)}</text>`;}
+      if (ref!=null) g+=`<line x1="${padL}" x2="${W-padR}" y1="${yv(ref)}" y2="${yv(ref)}" stroke="${PAL.faint}" stroke-dasharray="5 5"/>`;
       const pts=y.map((v,i)=>`${xs[i]},${yv(v)}`).join(" ");
-      let dots=y.map((v,i)=>`<circle cx="${xs[i]}" cy="${yv(v)}" r="4" fill="${color}" stroke="#0a0e13" stroke-width="1.5"><title>keep ${keep[i]} · ${v.toFixed(3)}</title></circle>`).join("");
-      dots+=keep.map((k,i)=>`<text x="${xs[i]}" y="${H-padB+20}" text-anchor="middle" fill="#8ea0b5" font-size="10" font-family="var(--mono)">${k}</text>`).join("");
-      dots+=`<text x="${W/2}" y="${H-4}" text-anchor="middle" fill="#8ea0b5" font-size="10" font-family="var(--mono)">${label}</text>`;
+      let dots=y.map((v,i)=>`<circle cx="${xs[i]}" cy="${yv(v)}" r="4" fill="${color}" stroke="#ffffff" stroke-width="1.5"><title>keep ${keep[i]} · ${v.toFixed(3)}</title></circle>`).join("");
+      dots+=keep.map((k,i)=>`<text x="${xs[i]}" y="${H-padB+20}" text-anchor="middle" fill="${PAL.axis}" font-size="10" font-family="ui-monospace,Menlo,monospace">${k}</text>`).join("");
+      dots+=`<text x="${W/2}" y="${H-4}" text-anchor="middle" fill="${PAL.axis}" font-size="10" font-family="ui-monospace,Menlo,monospace">${label}</text>`;
       return `<div style="display:inline-block;width:49%;min-width:250px"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.2"/>${g}${dots}</svg></div>`;
     };
     $("#figWithhold").innerHTML =
-      mk(sw.withhold_anchors, "iDrug_pair_aupr", "#4ade80", "anchor links kept (pair AUPR)", refPair) +
-      mk(sw.withhold_links,  "iDrug_pair_aupr", "#22d3ee", "other-domain links kept (pair AUPR)", refPair);
+      mk(sw.withhold_anchors, "iDrug_pair_aupr", PAL.green, "anchor links kept (pair AUPR)", refPair) +
+      mk(sw.withhold_links,  "iDrug_pair_aupr", PAL.cyan, "other-domain links kept (pair AUPR)", refPair);
   }
 
   if (D.real.paper_check_newdrug_official_p20){
@@ -681,6 +1268,8 @@ function render(){
       code on its own documented example, not close enough to claim exact replication.`;
   }
 }
+
+if (D && D.real){ render(); renderAtlas(); }
 </script>
 </body>
 </html>
