@@ -253,7 +253,7 @@
       <button data-ds="ctd" class="on">CTD + DrugBank</button>
       <button data-ds="gold">Gottlieb gold standard</button>
     </div>
-    <div class="grid g2">
+    <div class="grid" style="grid-template-columns:1fr">
       <div>
         <div class="tblwrap">
           <table class="cs">
@@ -287,7 +287,8 @@
       <div class="slabel">Experiment 3 · robustness</div>
       <h2>How the cross-network weight and the sparsity dial behave on real data</h2>
       <p class="sdesc">
-        Sweeps of the drug–disease AUPR on CTD + DrugBank with my iDrug (100 iterations, 5-fold, seed 0).
+        Sweeps of the drug–disease AUPR on CTD + DrugBank with my iDrug
+        (<span class="mono" id="swIters">…</span> iterations, 5-fold, seed 0).
         The β = 0 row is the pure single-domain ablation, so these charts show exactly what the
         cross-network term contributes on real biology rather than synthetic graphs.
       </p>
@@ -593,6 +594,7 @@ function render(){
 
   if (!D.sweeps) return;
   const sw = D.sweeps;
+  if (sw.settings && sw.settings.iters) $("#swIters").textContent = sw.settings.iters;
   const refPair = sw.ref_grmf_style ? sw.ref_grmf_style.pair_aupr[0] : null;
   const refND = sw.ref_grmf_style ? sw.ref_grmf_style.newdrug_p10 : null;
 

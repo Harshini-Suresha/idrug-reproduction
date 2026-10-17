@@ -1,5 +1,8 @@
 # iDrug reproduction (CPU-only) — real CTD/DrugBank data
 
+**Results website: https://harshini-suresha.github.io/idrug-reproduction/**
+(renders everything below from the committed JSONs; source of the page is `docs/index.html`)
+
 Reproduction of *iDrug: Integration of drug repositioning and drug-target prediction via
 cross-network embedding* (Chen, Cheng & Li, PLoS Comput Biol 2020), benchmarked on the
 **authors' real data**:
