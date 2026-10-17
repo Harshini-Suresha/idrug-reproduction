@@ -7,11 +7,11 @@
 <meta name="description" content="CPU-only reproduction of iDrug (Chen, Cheng & Li, PLoS Comput Biol 2020), benchmarked on the authors' real CTD/DrugBank and Gottlieb datasets.">
 <style>
   :root{
-    --bg:#f4f6fa; --panel:#ffffff; --panel2:#eef2f7; --line:#dbe3ec;
-    --text:#1b2537; --muted:#5a6b80; --faint:#93a2b5;
+    --bg:#fceef4; --panel:#ffffff; --panel2:#f9e7ee; --line:#eccfd9;
+    --text:#2b2230; --muted:#6f5f6a; --faint:#a8959f;
     --acc:#15803d; --acc2:#0e7490; --warn:#b45309; --red:#dc2626; --blue:#2563eb;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --sh:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.05);
+    --sh:0 1px 2px rgba(80,32,58,.06),0 1px 3px rgba(80,32,58,.05);
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -24,7 +24,7 @@
   h1,h2,h3{line-height:1.25;margin:0}
   .mono{font-family:var(--mono)}
 
-  nav{position:sticky;top:0;z-index:10;background:rgba(244,246,250,.88);backdrop-filter:blur(10px);
+  nav{position:sticky;top:0;z-index:10;background:rgba(252,238,244,.88);backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line)}
   nav .wrap{display:flex;align-items:center;gap:20px;height:58px}
   .brand{font-weight:700;letter-spacing:.02em}
@@ -38,7 +38,7 @@
 
   header{padding:72px 0 48px;border-bottom:1px solid var(--line);
     background:radial-gradient(1100px 420px at 20% -10%,rgba(22,163,74,.08),transparent),
-               radial-gradient(900px 420px at 90% 0%,rgba(14,116,144,.07),transparent)}
+               radial-gradient(900px 420px at 90% 0%,rgba(219,39,119,.09),transparent)}
   .eyebrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
   .pill{font-size:12px;font-family:var(--mono);border:1px solid var(--line);border-radius:99px;
     padding:4px 12px;color:var(--muted);background:var(--panel)}
@@ -93,7 +93,7 @@
     border-bottom:1px solid var(--line);font-weight:600}
   thead tr.grp th{text-align:center;color:var(--acc2);font-size:12px;padding-bottom:2px;border-bottom:none}
   tbody tr{border-top:1px solid var(--panel2)}
-  tbody tr:hover{background:rgba(15,23,42,.025)}
+  tbody tr:hover{background:rgba(150,52,98,.035)}
   td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
   tr.hero td{background:rgba(22,163,74,.06)}
   tr.hero td:first-child{color:var(--acc);font-weight:700}
@@ -507,8 +507,8 @@ const $ = s => document.querySelector(s);
 
 const PAL = {
   green:"#15803d", teal:"#0d9488", lime:"#65a30d", blue:"#2563eb", purple:"#7c3aed",
-  cyan:"#0e7490", amber:"#d97706", slate:"#94a3b8",
-  grid:"#e2e8f0", axis:"#64748b", ink:"#1b2537", faint:"#a9b6c6", red:"#dc2626", panel:"#eef2f7"
+  cyan:"#0e7490", amber:"#d97706", slate:"#a2939c",
+  grid:"#eedae2", axis:"#6f5f6a", ink:"#2b2230", faint:"#bba9b2", red:"#dc2626", panel:"#f9e7ee"
 };
 const METHODS = ["iDrug","iDrug-official","GRMF-style","GRMF","RLS-Kron","BiRW-simplified","Similarity-kNN","Popularity"];
 const MCOL = {
@@ -917,8 +917,16 @@ function renderAtlas(){
     const tbl = D.real[`${ds}_pair_${task}`];
     const items = METHODS.map(m=>({label:m, a:mm(tbl[m].auroc), b:mm(tbl[m].aupr)}));
     const spread = items.map(d=>d.a-d.b);
-    fig(gA, `${DSL[ds]} · ${TSL[task]} · AUROC vs AUPR`, dumbbells({items}),
-      `AUROC sits above AUPR for every method — the imbalance signature of uniform negatives. Widest gap: ${items[spread.indexOf(Math.max(...spread))].label} (+${Math.max(...spread).toFixed(3)}); narrowest: ${items[spread.indexOf(Math.min(...spread))].label} (+${Math.min(...spread).toFixed(3)}).`);
+    const above = spread.filter(v=>v>=0).length;
+    const mxv = Math.max(...spread), mnv = Math.min(...spread);
+    const mx = items[spread.indexOf(mxv)].label, mn = items[spread.indexOf(mnv)].label;
+    const sgn = v => (v>=0?"+":"−")+Math.abs(v).toFixed(3);
+    const cap = above===8
+      ? `AUROC exceeds AUPR for every method — the classic imbalance signature. Widest margin: ${mx} (${sgn(mxv)}); smallest: ${mn} (${sgn(mnv)}).`
+      : above===0
+        ? `Every method scores higher on AUPR than AUROC on this split. Largest gap: ${mn} (${sgn(mnv)}); smallest: ${mx} (${sgn(mxv)}).`
+        : `AUROC exceeds AUPR for ${above} of 8 methods and trails it for the rest. Largest positive margin: ${mx} (${sgn(mxv)}); most negative: ${mn} (${sgn(mnv)}).`;
+    fig(gA, `${DSL[ds]} · ${TSL[task]} · AUROC vs AUPR`, dumbbells({items}), cap);
   }
 
   for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]){
