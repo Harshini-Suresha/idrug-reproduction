@@ -53,3 +53,6 @@ report precision@5/10/15). Settings follow the paper's pair-prediction values: r
   walk is a simplified MBiRW stand-in; TL-HGBI is missing.
 - Real-data results are seed 0 only (s.d. = across folds). Tuning any baseline could reorder the tables.
 - Nothing here is biomedical advice; predictions are unvalidated computational hypotheses.
+
+## Contact
+harshinisuresha7@gmail.com
