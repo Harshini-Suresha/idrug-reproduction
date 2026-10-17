@@ -174,7 +174,7 @@
       <span class="pill green">real CTD + DrugBank data</span>
       <span class="pill">NumPy · CPU-only</span>
       <span class="pill">independent re-implementation</span>
-      <span class="pill">105-figure atlas</span>
+      <span class="pill">110-figure atlas</span>
     </div>
     <h1>iDrug, re-implemented from scratch — <span class="hl">benchmarked on the authors' real data</span></h1>
     <p class="sub">
@@ -184,7 +184,7 @@
       line-by-line, and implements five baseline methods from their papers — then benchmarks everything on the
       authors' released <em>CTD + DrugBank</em> matrices (1,321 × 3,966; 946 × 3,610; 469 shared drugs) and their
       smaller <em>Gottlieb gold-standard</em> dataset. Every number on this page regenerates from the committed
-      scripts, and the figure atlas below draws all of it in 105 live charts.
+      scripts, and the figure atlas below draws all of it in 110 live charts.
     </p>
     <div class="cta">
       <a class="btn primary" href="https://github.com/Harshini-Suresha/idrug-reproduction">Source code ↗</a>
@@ -196,7 +196,7 @@
       <div class="stat"><div class="v cyan">8</div><div class="k">methods benchmarked — iDrug, a line-by-line port of the official solver, GRMF, RLS-Kron, bi-random walk, similarity-kNN, popularity</div></div>
       <div class="stat"><div class="v green">111,481</div><div class="k">real drug–disease interactions (CTD), plus 10,234 drug–target pairs (DrugBank)</div></div>
       <div class="stat"><div class="v">469</div><div class="k">shared (anchor) drugs bridging the two domains — partial overlap, as in the paper</div></div>
-      <div class="stat"><div class="v amber">105</div><div class="k">figures in the atlas — all rendered in-browser from the real-data JSONs, none synthetic</div></div>
+      <div class="stat"><div class="v amber">110</div><div class="k">figures in the atlas — all rendered in-browser from the real-data JSONs, none synthetic</div></div>
     </div>
   </div>
 </header>
@@ -398,6 +398,8 @@
     <div class="figgrid" id="gC"></div>
     <h3 class="atlashead" id="headD">D · Profiles, variability, dataset anatomy, paper check — 14 figures</h3>
     <div class="figgrid" id="gD"></div>
+    <h3 class="atlashead" id="headE">E · Composite views — 5 figures</h3>
+    <div class="figgrid" id="gE"></div>
   </div>
 </section>
 
@@ -900,6 +902,159 @@ function heatTable({rows, cols, vals, fmt=(v)=>v.toFixed(3), colorFn, rowLab="",
   return html + (note?`<div class="fignote">${note}</div>`:"");
 }
 
+function spearman(a, b){
+  const rk = arr => {
+    const idx = arr.map((v,i)=>i).sort((i,j)=>arr[i]-arr[j]);
+    const r = new Array(arr.length);
+    let i = 0;
+    while (i < idx.length){
+      let j = i;
+      while (j+1 < idx.length && arr[idx[j+1]] === arr[idx[i]]) j++;
+      const avg = (i+j)/2 + 1;
+      for (let k=i;k<=j;k++) r[idx[k]] = avg;
+      i = j+1;
+    }
+    return r;
+  };
+  const ra = rk(a), rb = rk(b), n = a.length;
+  const d2 = ra.reduce((s,x,i)=>s+(x-rb[i])*(x-rb[i]),0);
+  return 1 - 6*d2/(n*(n*n-1));
+}
+
+function parcoords({axes, series, w=440, h=280}){
+  const padL=40, padR=64, padT=40, padB=34;
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const X=i=>padL+i/(axes.length-1)*iw;
+  const mins=axes.map((_,j)=>Math.min(...series.map(s=>s.vals[j])));
+  const maxs=axes.map((_,j)=>Math.max(...series.map(s=>s.vals[j])));
+  const Y=(j,v)=>{const sp=maxs[j]-mins[j]; return padT+(1-(sp<1e-9?.5:(v-mins[j])/sp))*ih;};
+  let g="";
+  axes.forEach((ax,j)=>{
+    g+=`<line x1="${X(j)}" x2="${X(j)}" y1="${padT-4}" y2="${padT+ih+4}" stroke="${PAL.grid}"/>`;
+    g+=`<text x="${X(j)}" y="${padT-24}" text-anchor="middle" font-size="8.5" fill="${PAL.axis}">${esc(ax)}</text>`;
+    g+=`<text x="${X(j)}" y="${padT-9}" text-anchor="middle" font-size="8" font-family="ui-monospace,monospace" fill="${PAL.faint}">${maxs[j].toFixed(3)}</text>`;
+    g+=`<text x="${X(j)}" y="${padT+ih+16}" text-anchor="middle" font-size="8" font-family="ui-monospace,monospace" fill="${PAL.faint}">${mins[j].toFixed(3)}</text>`;
+  });
+  series.forEach(s=>{
+    const hi=s.name==="iDrug"||s.name==="iDrug-official";
+    g+=`<polyline points="${s.vals.map((v,j)=>`${X(j)},${Y(j,v)}`).join(" ")}" fill="none" stroke="${s.color}" stroke-width="${hi?3.2:1.8}" opacity="${hi?1:.82}"/>`;
+    s.vals.forEach((v,j)=>{
+      if(hi) g+=`<circle cx="${X(j)}" cy="${Y(j,v)}" r="3.4" fill="${s.color}" stroke="#fff" stroke-width="1"><title>${esc(s.name)} · ${esc(axes[j])}: ${v.toFixed(3)}</title></circle>`;
+    });
+  });
+  const ends=series.map(s=>({name:s.name, color:s.color, y:Y(axes.length-1, s.vals[axes.length-1])})).sort((a,b)=>a.y-b.y);
+  ends.forEach((e,i)=>{ if(i) e.y=Math.max(e.y, ends[i-1].y+12.5); });
+  ends.forEach(e=>{
+    g+=`<text x="${w-padR+8}" y="${e.y+3.5}" font-size="9.5" font-weight="700" fill="${e.color}">${SHORT[e.name]}</text>`;
+  });
+  return S(w,h,g);
+}
+
+function bump({scenarios, rows, w=440, h=310}){
+  const padL=40, padR=58, padT=24, padB=52;
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const n=rows.length;
+  const X=i=>padL+(scenarios.length===1?iw/2:i/(scenarios.length-1)*iw);
+  const Y=r=>padT+(r-1)/(n-1)*ih;
+  let g="";
+  for(let r=1;r<=n;r++){
+    g+=`<line x1="${padL-6}" x2="${w-padR+6}" y1="${Y(r)}" y2="${Y(r)}" stroke="${PAL.grid}" stroke-dasharray="1 4"/>`;
+    g+=`<text x="${padL-10}" y="${Y(r)+3}" text-anchor="end" font-size="9" font-family="ui-monospace,monospace" fill="${PAL.axis}">#${r}</text>`;
+  }
+  scenarios.forEach((sc,i)=>{
+    const x=X(i), y=h-padB+16;
+    g+=`<text x="${x}" y="${y}" text-anchor="end" font-size="8.5" fill="${PAL.axis}" transform="rotate(-30 ${x} ${y})">${esc(sc)}</text>`;
+  });
+  rows.forEach(s=>{
+    const hi=s.name==="iDrug"||s.name==="iDrug-official";
+    g+=`<polyline points="${s.ranks.map((r,i)=>`${X(i)},${Y(r)}`).join(" ")}" fill="none" stroke="${s.color}" stroke-width="${hi?3:1.8}" opacity="${hi?1:.8}"/>`;
+    s.ranks.forEach((r,i)=>{
+      g+=`<circle cx="${X(i)}" cy="${Y(r)}" r="7" fill="${s.color}" stroke="#fff" stroke-width="1.2"><title>${esc(s.name)} · ${esc(scenarios[i])}: rank ${r}</title></circle>`;
+      g+=`<text x="${X(i)}" y="${Y(r)+2.6}" text-anchor="middle" font-size="7.5" font-weight="700" fill="#fff">${r}</text>`;
+    });
+    g+=`<text x="${w-padR+8}" y="${Y(s.ranks[s.ranks.length-1])+3.5}" font-size="9.5" font-weight="700" fill="${s.color}">${SHORT[s.name]}</text>`;
+  });
+  return S(w,h,g);
+}
+
+function margScatter({pts, xlab, ylab, w=440, h=320, bins=5}){
+  const padL=48, padR=66, padT=54, padB=38, hist=42, histW=42;
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const xlo=Math.min(...xs), xhi=Math.max(...xs), ylo=Math.min(...ys), yhi=Math.max(...ys);
+  const xpad=(xhi-xlo)*.08||.004, ypad=(yhi-ylo)*.12||.004;
+  const XL=xlo-xpad, XH=xhi+xpad, YL=ylo-ypad, YH=yhi+ypad;
+  const X=v=>padL+(v-XL)/(XH-XL)*iw;
+  const Y=v=>padT+(1-(v-YL)/(YH-YL))*ih;
+  let g="";
+  for(let i=0;i<=4;i++){
+    const vv=YL+(YH-YL)*i/4;
+    g+=`<line x1="${padL}" x2="${padL+iw}" y1="${Y(vv)}" y2="${Y(vv)}" stroke="${PAL.grid}"/>`;
+    g+=`<text x="${padL-6}" y="${Y(vv)+3.5}" text-anchor="end" font-size="9" fill="${PAL.axis}" font-family="ui-monospace,monospace">${vv.toFixed(2)}</text>`;
+  }
+  const med=arr=>{const s=arr.slice().sort((a,b)=>a-b),n=s.length;return n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;};
+  const mx=med(xs), my=med(ys);
+  g+=`<line x1="${X(mx)}" x2="${X(mx)}" y1="${padT}" y2="${padT+ih}" stroke="${PAL.faint}" stroke-dasharray="4 4"/>`;
+  g+=`<line x1="${padL}" x2="${padL+iw}" y1="${Y(my)}" y2="${Y(my)}" stroke="${PAL.faint}" stroke-dasharray="4 4"/>`;
+  const xbw=(XH-XL)/bins, ybw=(YH-YL)/bins;
+  const xc=new Array(bins).fill(0), yc=new Array(bins).fill(0);
+  xs.forEach(v=>xc[Math.min(bins-1,Math.floor((v-XL)/xbw))]++);
+  ys.forEach(v=>yc[Math.min(bins-1,Math.floor((v-YL)/ybw))]++);
+  const xcm=Math.max(...xc,1), ycm=Math.max(...yc,1);
+  for(let b=0;b<bins;b++){
+    if(xc[b]){
+      const x0=padL+b/bins*iw, hh=xc[b]/xcm*(hist-8);
+      g+=`<rect x="${x0+1.5}" y="${padT-6-hh}" width="${iw/bins-3}" height="${hh}" rx="2" fill="${PAL.slate}" opacity=".55"><title>x-bin ${(XL+b*xbw).toFixed(3)}–${(XL+(b+1)*xbw).toFixed(3)}: ${xc[b]} method${xc[b]>1?"s":""}</title></rect>`;
+    }
+    if(yc[b]){
+      const yt=Y(YL+(b+1)*ybw), yb=Y(YL+b*ybw), ww=yc[b]/ycm*(histW-10);
+      g+=`<rect x="${padL+iw+5}" y="${yt+1.5}" width="${ww}" height="${yb-yt-3}" rx="2" fill="${PAL.slate}" opacity=".55"><title>y-bin ${(YL+b*ybw).toFixed(3)}–${(YL+(b+1)*ybw).toFixed(3)}: ${yc[b]} method${yc[b]>1?"s":""}</title></rect>`;
+    }
+  }
+  pts.forEach(p=>{
+    const px=X(p.x), py=Y(p.y);
+    const right = px > w-padR-64;
+    g+=`<circle cx="${px}" cy="${py}" r="5" fill="${p.color}" stroke="#fff" stroke-width="1.2"><title>${esc(p.label)} · x ${p.x.toFixed(3)} · y ${p.y.toFixed(3)}</title></circle>`;
+    g+=`<text x="${right?px-8:px+8}" y="${py+3.5}" text-anchor="${right?"end":"start"}" font-size="9" font-weight="600" fill="${PAL.axis}">${SHORT[p.label]||p.label}</text>`;
+  });
+  g+=`<text x="${padL+iw/2}" y="${h-6}" text-anchor="middle" font-size="10.5" fill="${PAL.axis}">${xlab}</text>`;
+  g+=`<text x="12" y="${padT+ih/2}" text-anchor="middle" font-size="10.5" fill="${PAL.axis}" transform="rotate(-90 12 ${padT+ih/2})">${ylab}</text>`;
+  return S(w,h,g);
+}
+
+function polarRose({axes, series, w=340, h=336}){
+  const cx=w/2, cy=h/2+8, R=Math.min(w,h)/2-54, r0=24;
+  const n=axes.length, sec=360/n;
+  const mins=axes.map((_,j)=>Math.min(...series.map(s=>s.vals[j])));
+  const maxs=axes.map((_,j)=>Math.max(...series.map(s=>s.vals[j])));
+  const norm=(j,v)=>{const sp=maxs[j]-mins[j]; return sp<1e-9?.5:(v-mins[j])/sp;};
+  const P=(angDeg,r)=>{const a=(angDeg-90)*Math.PI/180; return [cx+r*Math.cos(a), cy+r*Math.sin(a)];};
+  const sectorPath=(a1,a2,r1,r2)=>{
+    const [x1,y1]=P(a1,r1),[x2,y2]=P(a2,r1),[x3,y3]=P(a2,r2),[x4,y4]=P(a1,r2);
+    return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r1} ${r1} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L ${x3.toFixed(1)} ${y3.toFixed(1)} A ${r2} ${r2} 0 0 0 ${x4.toFixed(1)} ${y4.toFixed(1)} Z`;
+  };
+  let g="";
+  series.forEach((s,i)=>{
+    g+=`<rect x="${12+i*104}" y="8" width="9" height="9" rx="2" fill="${s.color}"/><text x="${12+i*104+13}" y="16.5" font-size="10" fill="${PAL.axis}">${s.name}</text>`;
+  });
+  for(let r=1;r<=3;r++) g+=`<circle cx="${cx}" cy="${cy}" r="${(r0+(R-r0)*r/3).toFixed(1)}" fill="none" stroke="${PAL.grid}"/>`;
+  axes.forEach((ax,j)=>{
+    const base=j*sec;
+    const [ax1,ay1]=P(base,r0-4), [ax2,ay2]=P(base,R+4);
+    g+=`<line x1="${ax1.toFixed(1)}" y1="${ay1.toFixed(1)}" x2="${ax2.toFixed(1)}" y2="${ay2.toFixed(1)}" stroke="${PAL.grid}"/>`;
+    series.forEach((s,si)=>{
+      const v=s.vals[j];
+      const a1=base-21+si*15, a2=a1+12;
+      const r2=r0+(R-r0)*Math.max(.04,norm(j,v));
+      g+=`<path d="${sectorPath(a1,a2,r0+2,r2)}" fill="${s.color}" opacity=".78"><title>${esc(s.name)} · ${esc(ax)}: ${v.toFixed(3)}</title></path>`;
+    });
+    const [lx,ly]=P(base,R+22);
+    g+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="8.5" fill="${PAL.axis}">${esc(ax)}</text>`;
+  });
+  g+=`<circle cx="${cx}" cy="${cy}" r="${r0-6}" fill="${PAL.panel}" stroke="${PAL.faint}"/>`;
+  return S(w,h,g);
+}
+
 function radar({axes, series, w=330, h=300, fmt=v=>v.toFixed(3)}){
   const cx=w/2, cy=h/2+4, R=Math.min(w,h)/2-62;
   const n=axes.length;
@@ -963,7 +1118,7 @@ function fig(grid, title, body, note){
 }
 
 function renderAtlas(){
-  const gA=$("#gA"), gB=$("#gB"), gC=$("#gC"), gD=$("#gD");
+  const gA=$("#gA"), gB=$("#gB"), gC=$("#gC"), gD=$("#gD"), gE=$("#gE");
   if(!gA) return;
 
   $("#atlasLegend").innerHTML = METHODS.map(m=>`<span><i style="background:${MCOL[m]}"></i>${m}</span>`).join("")
@@ -1205,6 +1360,61 @@ function renderAtlas(){
     const v = mm(D.real.paper_check_newdrug_official_p20["iDrug-official"]["20"]);
     fig(gD, "official solver · P@20 at the authors' settings", gaugeFig({value:v, ref:0.23, max:0.5}),
       `My port of the authors' solver scores ${v.toFixed(3)} against the README's printed <b>0.23</b> on the same documented example (rank 70/70, α = β = γ = 0.01, w = 0.3, k = 20).`);
+  }
+
+  /* E · composite views — 5 figures */
+  if (gE){
+    const SCN=[
+      ["ctd_pair_drug_disease","aupr","pair DD"],
+      ["ctd_pair_drug_target","aupr","pair DT"],
+      ["ctd_newdrug_drug_disease","5","newdrug DD"],
+      ["ctd_newdrug_drug_target","5","newdrug DT"],
+      ["ctd_newcol_drug_disease","5","newcol DD"],
+      ["ctd_newcol_drug_target","5","newcol DT"]
+    ];
+    const sv=(m,[tbl,k])=>mm(D.real[tbl][m][k]);
+    const sAxes=SCN.map(s=>s[2]);
+    const sSeries=METHODS.map(m=>({name:m, color:MCOL[m], vals:SCN.map(sc=>sv(m,sc))}));
+    const rankIn=(m,j)=>{const arr=METHODS.map(x=>sv(x,SCN[j])).slice().sort((a,b)=>b-a); return arr.indexOf(sv(m,SCN[j]))+1;};
+    const meanRank=m=>SCN.reduce((s,_,j)=>s+rankIn(m,j),0)/SCN.length;
+    const bestByRank=METHODS.reduce((a,b)=>meanRank(a)<=meanRank(b)?a:b);
+    fig(gE, "parallel coordinates · 8 methods × 6 CTD scenarios",
+      parcoords({axes:sAxes, series:sSeries}),
+      `Each axis is independently min–max scaled across the eight methods (raw max/min printed above and below). Best mean rank across the six scenarios: <b>${bestByRank}</b> (${meanRank(bestByRank).toFixed(1)}). Hover any highlighted vertex for the raw value.`);
+
+    const rows=METHODS.map(m=>({name:m, color:MCOL[m], ranks:SCN.map((_,j)=>rankIn(m,j))}));
+    const swing=rows.map(r=>({name:r.name, d:Math.max(...r.ranks)-Math.min(...r.ranks)})).reduce((a,b)=>a.d>=b.d?a:b);
+    fig(gE, "bump chart · rank across the six CTD scenarios",
+      bump({scenarios:sAxes, rows}),
+      `Rank within each scenario (1 = best). Biggest mover: <b>${swing.name}</b>, spanning ${swing.d} ranks; lines that never cross are scenario-stable.`);
+
+    const PROFILE=m=>{
+      const v=[];
+      for (const ds of ["ctd","gold"]) for (const task of ["drug_disease","drug_target"]) v.push(mm(D.real[`${ds}_pair_${task}`][m].aupr));
+      for (const task of ["drug_disease","drug_target"]) for (const k of ["5","10","15"]) v.push(mm(D.real[`ctd_newdrug_${task}`][m][k]));
+      for (const task of ["drug_disease","drug_target"]) v.push(mm(D.real[`ctd_newcol_${task}`][m]["10"]));
+      return v;
+    };
+    const RHO=METHODS.map(a=>METHODS.map(b=>spearman(PROFILE(a), PROFILE(b))));
+    let lo={v:2,i:0,j:0};
+    RHO.forEach((row,i)=>row.forEach((v,j)=>{ if(i<j && v<lo.v) lo={v,i,j}; }));
+    fig(gE, "Spearman correlation · 8 method profiles × 12 benchmark cells",
+      heatTable({rows:METHODS.map(m=>SHORT[m]), cols:METHODS.map(m=>SHORT[m]), vals:RHO, rowLab:"ρ ↓",
+        fmt:v=>v.toFixed(2), colorFn:v=>valColor((v+1)/2),
+        titleFn:(i,j,v)=>`${METHODS[i]} × ${METHODS[j]} · ρ = ${v.toFixed(2)}`}),
+      `Each profile = the method's 12 real scores (4 pair-AUPR cells + 8 CTD cold-start cells); ρ computed on ranks. Most divergent pair: ${METHODS[lo.i]} × ${METHODS[lo.j]} (ρ = ${lo.v.toFixed(2)}); green = rank-aligned.`);
+
+    const mpts=METHODS.map(m=>({x:mm(D.real["ctd_pair_drug_disease"][m].aupr), y:mm(D.real["gold_pair_drug_disease"][m].aupr), label:m, color:MCOL[m]}));
+    const mx1=mpts.reduce((a,b)=>a.x>=b.x?a:b), my1=mpts.reduce((a,b)=>a.y>=b.y?a:b);
+    fig(gE, "CTD vs gold AUPR · drug–disease, with marginals",
+      margScatter({pts:mpts, xlab:"CTD + DrugBank · pair AUPR", ylab:"Gottlieb gold · pair AUPR"}),
+      `Points are methods; top/right histograms bin the eight values, dashed lines are medians. ${mx1.label===my1.label?`${mx1.label} tops both datasets — the ranking transfers.`:`${mx1.label} leads on CTD while ${my1.label} leads on gold — the ranking does not transfer between datasets.`}`);
+
+    const roseSeries=["iDrug","iDrug-official","GRMF-style"].map(m=>({name:m, color:MCOL[m], vals:SCN.map(sc=>sv(m,sc))}));
+    const roseMax=(m=>{ let b=0; SCN.forEach((_,j)=>{ if(sv(m,SCN[j])>sv(m,SCN[b])) b=j; }); return SCN[b][2]; })("iDrug");
+    fig(gE, "polar rose · iDrug vs official port vs β = 0 ablation",
+      polarRose({axes:sAxes, series:roseSeries}),
+      `Six sectors, one per CTD scenario; bars radially scaled within each sector. iDrug's strongest sector is <b>${roseMax}</b>. Same caveat as the radar: scaling is within-sector, so read shape rather than absolute score.`);
   }
 }
 
