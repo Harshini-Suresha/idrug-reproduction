@@ -4,7 +4,8 @@
 (renders everything below from the committed JSONs; source of the page is `docs/index.html`)
 
 Reproduction of *iDrug: Integration of drug repositioning and drug-target prediction via
-cross-network embedding* (Chen, Cheng & Li, PLoS Comput Biol 2020), benchmarked on the
+cross-network embedding* (Huiyuan Chen, Feixiong Cheng & Jing Li, PLOS Computational Biology
+2020), benchmarked on the
 **authors' real data**:
 
 - **CTD + DrugBank** (their `.mat` release): drug–disease 1,321 × 3,966 (111,481 links),
@@ -53,6 +54,28 @@ report precision@5/10/15). Settings follow the paper's pair-prediction values: r
   walk is a simplified MBiRW stand-in; TL-HGBI is missing.
 - Real-data results are seed 0 only (s.d. = across folds). Tuning any baseline could reorder the tables.
 - Nothing here is biomedical advice; predictions are unvalidated computational hypotheses.
+
+## Citation
+If you use the iDrug model or datasets, cite the original paper — not this page:
+
+> Chen H, Cheng F, Li J (2020) iDrug: Integration of drug repositioning and drug-target
+> prediction via cross-network embedding. *PLoS Comput Biol* 16(7): e1008040.
+> https://doi.org/10.1371/journal.pcbi.1008040
+
+```bibtex
+@article{chen2020idrug,
+  author  = {Chen, Huiyuan and Cheng, Feixiong and Li, Jing},
+  title   = {iDrug: Integration of drug repositioning and drug-target prediction via cross-network embedding},
+  journal = {PLOS Computational Biology},
+  year    = {2020},
+  volume  = {16},
+  number  = {7},
+  pages   = {e1008040},
+  doi     = {10.1371/journal.pcbi.1008040}
+}
+```
+
+This reproduction is unaffiliated with the authors and with PLOS.
 
 ## Contact
 harshinisuresha7@gmail.com

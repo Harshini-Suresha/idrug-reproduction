@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>iDrug reproduction — results on real data</title>
-<meta name="description" content="CPU-only reproduction of iDrug (Chen, Cheng & Li, PLoS Comput Biol 2020), benchmarked on the authors' real CTD/DrugBank and Gottlieb datasets.">
+<meta name="description" content="CPU-only reproduction of iDrug (Huiyuan Chen, Feixiong Cheng & Jing Li, PLOS Computational Biology 2020), benchmarked on the authors' real CTD/DrugBank and Gottlieb datasets.">
 <style>
   :root{
     --bg:#fceef4; --panel:#ffffff; --panel2:#f9e7ee; --line:#eccfd9;
@@ -133,6 +133,16 @@
   .bignum .v{font-size:40px;font-weight:800;font-family:var(--mono);letter-spacing:-.02em;line-height:1.1}
   .bignum .k{color:var(--muted);font-size:13.5px;margin-top:6px}
 
+  .citeauthors{font-size:15.5px;font-weight:650;margin:12px 0 2px}
+  .citeauthors sup{color:var(--acc2);font-weight:700}
+  .affil{font-size:13px;color:var(--muted);line-height:1.75;margin-top:10px}
+  .affil sup{color:var(--acc2);font-weight:700}
+  .orcid{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+  .orcid a{color:var(--muted)}
+  .plaincite{font-size:13px;color:var(--muted);margin-top:14px;line-height:1.7}
+  #bibtex{font-size:11px;line-height:1.6;overflow-x:auto}
+  #copyBib{margin-top:2px;cursor:pointer}
+
   footer{padding:40px 0 56px;color:var(--muted);font-size:14px}
   footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
   footer .sp{margin-left:auto}
@@ -164,6 +174,7 @@
       <a href="#coldstart">Cold start</a>
       <a href="#robustness">Robustness</a>
       <a href="#atlas">Figure atlas</a>
+      <a href="#citation">Paper</a>
       <a href="#limits">Limits</a>
       <a href="#run">Run it</a>
       <a class="ghbtn" href="https://github.com/Harshini-Suresha/idrug-reproduction">GitHub ↗</a>
@@ -182,7 +193,7 @@
     <h1>iDrug, re-implemented from scratch — <span class="hl">benchmarked on the authors' real data</span></h1>
     <p class="sub">
       <em>iDrug: Integration of drug repositioning and drug-target prediction via cross-network embedding</em>
-      (Chen, Cheng &amp; Li, <em>PLoS Comput Biol</em> 2020) predicts drug–disease and drug–target links with a
+      (Huiyuan Chen, Feixiong Cheng &amp; Jing Li, <em>PLOS Computational Biology</em> 2020) predicts drug–disease and drug–target links with a
       cross-network matrix factorization. This project rebuilds the model, ports the authors' MATLAB solver
       line-by-line, and implements five baseline methods from their papers — then benchmarks everything on the
       authors' released <em>CTD + DrugBank</em> matrices (1,321 × 3,966; 946 × 3,610; 469 shared drugs) and their
@@ -382,6 +393,76 @@
       </div>
     </div>
     <p class="sdesc" style="margin-top:22px" id="pcTakeaway">…</p>
+  </div>
+</section>
+
+<section id="citation">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">The paper</div>
+      <h2>What this page reproduces</h2>
+      <p class="sdesc">
+        This is an independent, CPU-only reproduction. All credit for the iDrug model, the datasets, and the
+        original results belongs to the authors — if you use the model or data, cite their paper, not this page.
+      </p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3 style="line-height:1.4;font-size:19px">
+          <a href="https://doi.org/10.1371/journal.pcbi.1008040">iDrug: Integration of drug repositioning and drug-target prediction via cross-network embedding</a>
+        </h3>
+        <p class="citeauthors">Huiyuan Chen<sup>1</sup>, Feixiong Cheng<sup>2,3,4</sup>, Jing Li<sup>1,4,*</sup></p>
+        <p class="sdesc" style="margin-top:6px">
+          <em>PLOS Computational Biology</em> 16(7): e1008040 · published July 15, 2020 ·
+          received November 22, 2019 · accepted June 10, 2020 · open access (CC BY 4.0) ·
+          editor: Avner Schlessinger (Icahn School of Medicine at Mount Sinai)
+        </p>
+        <div class="affil">
+          <sup>1</sup>Department of Computer and Data Sciences, Case Western Reserve University, Cleveland, Ohio, USA<br>
+          <sup>2</sup>Genomic Medicine Institute, Lerner Research Institute, Cleveland Clinic, Cleveland, Ohio, USA<br>
+          <sup>3</sup>Department of Molecular Medicine, Cleveland Clinic Lerner College of Medicine, Case Western Reserve University, Cleveland, Ohio, USA<br>
+          <sup>4</sup>Case Comprehensive Cancer Center, Case Western Reserve University School of Medicine, Cleveland, Ohio, USA<br>
+          <sup>*</sup>Corresponding author: <a href="mailto:jingli@cwru.edu">jingli@cwru.edu</a>
+        </div>
+        <div class="affil">
+          ORCID:
+          <span class="orcid"><a href="http://orcid.org/0000-0002-6360-558X">Huiyuan Chen 0000-0002-6360-558X</a></span> ·
+          <span class="orcid"><a href="http://orcid.org/0000-0002-1736-2847">Feixiong Cheng 0000-0002-1736-2847</a></span> ·
+          <span class="orcid"><a href="http://orcid.org/0000-0003-1160-6959">Jing Li 0000-0003-1160-6959</a></span>
+        </div>
+        <p class="sdesc" style="margin-top:12px">
+          Authors' code, MATLAB solver and datasets:
+          <a href="https://github.com/Case-esaC/iDrug">github.com/Case-esaC/iDrug ↗</a>
+        </p>
+        <p class="plaincite">
+          Plain text — Chen H, Cheng F, Li J (2020) iDrug: Integration of drug repositioning and drug-target
+          prediction via cross-network embedding. <em>PLoS Comput Biol</em> 16(7): e1008040.
+          <a href="https://doi.org/10.1371/journal.pcbi.1008040">https://doi.org/10.1371/journal.pcbi.1008040</a>
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:16px">Cite it — BibTeX</h3>
+        <pre id="bibtex">@article{chen2020idrug,
+  author  = {Chen, Huiyuan and Cheng, Feixiong
+             and Li, Jing},
+  title   = {iDrug: Integration of drug repositioning
+             and drug-target prediction via
+             cross-network embedding},
+  journal = {PLOS Computational Biology},
+  year    = {2020},
+  volume  = {16},
+  number  = {7},
+  pages   = {e1008040},
+  doi     = {10.1371/journal.pcbi.1008040}
+}</pre>
+        <button class="btn" id="copyBib" type="button">Copy BibTeX</button>
+        <p class="sdesc" style="margin-top:14px">
+          This page is unaffiliated with the authors and with PLOS. The baseline methods (PREDICT, MBiRW, GRMF,
+          RLS-Kron) are re-implementations from their own papers — details in the
+          <a href="https://github.com/Harshini-Suresha/idrug-reproduction#readme">repo README</a>.
+        </p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1279,6 +1360,27 @@ function render(){
 }
 
 if (D && D.real){ render(); renderAtlas(); }
+
+const bibBtn = document.getElementById("copyBib");
+if (bibBtn){
+  bibBtn.addEventListener("click", () => {
+    const pre = document.getElementById("bibtex");
+    const done = () => {
+      bibBtn.textContent = "Copied";
+      setTimeout(() => { bibBtn.textContent = "Copy BibTeX"; }, 1600);
+    };
+    if (navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(pre.textContent).then(done).catch(() => {});
+    } else {
+      const r = document.createRange();
+      r.selectNodeContents(pre);
+      const s = window.getSelection();
+      s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand("copy"); done(); } catch(e){}
+      s.removeAllRanges();
+    }
+  });
+}
 </script>
 </body>
 </html>
