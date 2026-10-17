@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iDrug reproduction — results on real data</title>
+<meta name="description" content="CPU-only reproduction of iDrug (Chen, Cheng & Li, PLoS Comput Biol 2020), benchmarked on the authors' real CTD/DrugBank and Gottlieb datasets.">
+<style>
+  :root{
+    --bg:#0a0e13; --panel:#10161f; --panel2:#0d131b; --line:#1e2936;
+    --text:#e7edf5; --muted:#8ea0b5; --faint:#5b6b7e;
+    --acc:#4ade80; --acc2:#22d3ee; --warn:#fbbf24; --red:#f87171; --blue:#60a5fa;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--acc2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{line-height:1.25;margin:0}
+  .mono{font-family:var(--mono)}
+
+  nav{position:sticky;top:0;z-index:10;background:rgba(10,14,19,.85);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:20px;height:58px}
+  .brand{font-weight:700;letter-spacing:.02em}
+  .brand .dot{color:var(--acc)}
+  nav .links{display:flex;gap:16px;margin-left:auto;font-size:14px;color:var(--muted)}
+  nav .links a{color:var(--muted)}
+  nav .links a:hover{color:var(--text);text-decoration:none}
+  .ghbtn{border:1px solid var(--line);border-radius:8px;padding:5px 12px;color:var(--text)!important;font-size:13px}
+  .ghbtn:hover{border-color:var(--acc)}
+  @media(max-width:860px){nav .links a:not(.ghbtn){display:none}}
+
+  header{padding:72px 0 48px;border-bottom:1px solid var(--line);
+    background:radial-gradient(1100px 420px at 20% -10%,rgba(74,222,128,.09),transparent),
+               radial-gradient(900px 420px at 90% 0%,rgba(34,211,238,.07),transparent)}
+  .eyebrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+  .pill{font-size:12px;font-family:var(--mono);border:1px solid var(--line);border-radius:99px;
+    padding:4px 12px;color:var(--muted);background:var(--panel)}
+  .pill.green{color:var(--acc);border-color:rgba(74,222,128,.35)}
+  h1{font-size:clamp(30px,4.6vw,46px);font-weight:800;letter-spacing:-.02em;max-width:840px}
+  h1 .hl{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);max-width:780px;margin-top:18px;font-size:17px}
+  .sub em{color:var(--text);font-style:normal}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+  .btn{display:inline-block;border-radius:9px;padding:10px 18px;font-size:14px;font-weight:600;
+    border:1px solid var(--line);color:var(--text)}
+  .btn:hover{text-decoration:none;border-color:var(--acc)}
+  .btn.primary{background:linear-gradient(90deg,rgba(74,222,128,.16),rgba(34,211,238,.14));
+    border-color:rgba(74,222,128,.4);color:var(--acc)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:44px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .stat .v{font-size:24px;font-weight:800;font-family:var(--mono);letter-spacing:-.02em}
+  .stat .v.green{color:var(--acc)} .stat .v.cyan{color:var(--acc2)} .stat .v.amber{color:var(--warn)}
+  .stat .k{font-size:12.5px;color:var(--muted);margin-top:4px}
+  @media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+  .callout{display:flex;gap:14px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);
+    border-radius:12px;padding:16px 18px;margin:28px 0;font-size:14.5px;color:#e9d9ac}
+  .callout .ic{font-size:19px;line-height:1.3}
+  .callout strong{color:var(--warn)}
+  .callout a{color:var(--warn)}
+
+  section{padding:64px 0;border-bottom:1px solid var(--line)}
+  .shead{margin-bottom:30px}
+  .slabel{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+  h2{font-size:clamp(22px,3vw,30px);letter-spacing:-.015em}
+  .sdesc{color:var(--muted);margin-top:12px;max-width:820px}
+  .sdesc b{color:var(--text);font-weight:600}
+  .sdesc code{font-size:12.5px}
+
+  .grid{display:grid;gap:18px}
+  .grid > *{min-width:0}
+  .g2{grid-template-columns:1fr 1fr}
+  @media(max-width:860px){.g2{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+  .card .note{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .card .fig{width:100%}
+  .fig svg{width:100%;height:auto;display:block}
+
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+  table.cs{min-width:520px}
+  th,td{padding:10px 14px;text-align:right;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    border-bottom:1px solid var(--line);font-weight:600}
+  thead tr.grp th{text-align:center;color:var(--acc2);font-size:12px;padding-bottom:2px;border-bottom:none}
+  tbody tr{border-top:1px solid var(--panel2)}
+  tbody tr:hover{background:rgba(255,255,255,.016)}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
+  tr.hero td{background:rgba(74,222,128,.05)}
+  tr.hero td:first-child{color:var(--acc);font-weight:700}
+  .best{color:var(--acc);font-weight:700}
+  .bad{color:var(--muted)}
+  .sig{color:var(--faint);font-size:12px}
+  .bar{position:relative}
+  .bar .fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:60%;
+    background:linear-gradient(90deg,rgba(34,211,238,.35),rgba(34,211,238,.12));border-radius:3px;z-index:0}
+  .bar.g .fill{background:linear-gradient(90deg,rgba(74,222,128,.42),rgba(74,222,128,.14))}
+  .bar span{position:relative;z-index:1}
+
+  .heat td,.heat th{text-align:center;font-family:var(--mono);font-size:12px;padding:8px 6px;white-space:nowrap}
+  .heat td.cell{border-radius:6px;color:#0b0f14;font-weight:600}
+  .heat .lbl{color:var(--muted);font-size:12px;font-family:var(--mono)}
+
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
+  .toggle button{background:transparent;color:var(--muted);border:0;padding:8px 16px;font-size:13.5px;
+    font-family:inherit;cursor:pointer;font-weight:600}
+  .toggle button.on{background:rgba(74,222,128,.14);color:var(--acc)}
+
+  pre{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;
+    font-family:var(--mono);font-size:13px;line-height:1.6;color:#cfe0f0;margin:0 0 14px}
+  pre .c{color:var(--faint)}
+  code{font-family:var(--mono);font-size:.92em;background:var(--panel2);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+  .lim{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:900px){.lim{grid-template-columns:1fr}}
+  .lim .card{padding:16px 18px}
+  .lim h3{color:var(--warn);font-size:13.5px;margin-bottom:8px}
+  .lim p{margin:0;font-size:13.5px;color:var(--muted)}
+  .lim code{font-size:12px}
+
+  .big2{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:720px}
+  @media(max-width:700px){.big2{grid-template-columns:1fr}}
+  .bignum{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+  .bignum .v{font-size:40px;font-weight:800;font-family:var(--mono);letter-spacing:-.02em;line-height:1.1}
+  .bignum .k{color:var(--muted);font-size:13.5px;margin-top:6px}
+
+  footer{padding:40px 0 56px;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+  footer .sp{margin-left:auto}
+  .kicker{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:10px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">iDrug<span class="dot">·</span>reproduction</div>
+    <div class="links">
+      <a href="#results">Pair prediction</a>
+      <a href="#coldstart">Cold start</a>
+      <a href="#robustness">Robustness</a>
+      <a href="#papercheck">Paper check</a>
+      <a href="#limits">Limits</a>
+      <a href="#run">Run it</a>
+      <a class="ghbtn" href="https://github.com/Harshini-Suresha/idrug-reproduction">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="pill green">real CTD + DrugBank data</span>
+      <span class="pill">NumPy · CPU-only</span>
+      <span class="pill">independent re-implementation</span>
+    </div>
+    <h1>iDrug, re-implemented from scratch — <span class="hl">benchmarked on the authors' real data</span></h1>
+    <p class="sub">
+      <em>iDrug: Integration of drug repositioning and drug-target prediction via cross-network embedding</em>
+      (Chen, Cheng &amp; Li, <em>PLoS Comput Biol</em> 2020) predicts drug–disease and drug–target links with a
+      cross-network matrix factorization. This project rebuilds the model, ports the authors' MATLAB solver
+      line-by-line, and implements five baseline methods from their papers — then benchmarks everything on the
+      authors' released <em>CTD + DrugBank</em> matrices (1,321 × 3,966; 946 × 3,610; 469 shared drugs) and their
+      smaller <em>Gottlieb gold-standard</em> dataset. Every number on this page regenerates from the committed
+      scripts.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Harshini-Suresha/idrug-reproduction">Source code ↗</a>
+      <a class="btn" href="https://doi.org/10.1371/journal.pcbi.1008040">The paper (PLOS) ↗</a>
+      <a class="btn" href="https://github.com/Case-esaC/iDrug">Authors' data + MATLAB ↗</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v cyan">8</div><div class="k">methods benchmarked — iDrug, a line-by-line port of the official solver, GRMF, RLS-Kron, bi-random walk, similarity-kNN, popularity</div></div>
+      <div class="stat"><div class="v green">111,481</div><div class="k">real drug–disease interactions (CTD), plus 10,234 drug–target pairs (DrugBank)</div></div>
+      <div class="stat"><div class="v">469</div><div class="k">shared (anchor) drugs bridging the two domains — partial overlap, as in the paper</div></div>
+      <div class="stat"><div class="v amber">2</div><div class="k">real datasets — CTD/DrugBank and the Gottlieb gold standard; synthetic generators kept for testing</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="callout">
+    <div class="ic">⚠️</div>
+    <div>
+      <strong>Real data, our protocol.</strong> The data is the authors' own released matrices
+      (clone <span class="mono">github.com/Case-esaC/iDrug</span>; ~290 MB, not shipped in this repo), but all code
+      here is an independent re-implementation and the evaluation protocol is mine, following the paper's
+      description. <strong>These are not the paper's numbers and not their code.</strong> One caveat matters for
+      reading the tables below: with uniformly sampled negatives, degree alone is a strong signal — the trivial
+      popularity baseline reaches <span class="mono" id="popNote">…</span> AUPR on CTD drug–disease — so judge
+      methods by their margin over that baseline, not by absolute value.
+    </div>
+  </div>
+</div>
+
+<section id="results">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">Experiment 1 · pair prediction</div>
+      <h2>Hide 1/5 of the known links, rank everything else</h2>
+      <p class="sdesc">
+        5-fold CV per task domain: each fold masks 1/5 of the known links during training and tests on those plus
+        an equal number of uniformly sampled unknown pairs. Mean ± s.d. across the five folds, one run per domain
+        (seed 0). Settings are the paper's pair-prediction values: ranks 90/70, α = β = γ = 0.001, w = 0.3,
+        up to 200 iterations. My iDrug uses a shared rank 90 in both domains (a documented difference).
+      </p>
+    </div>
+    <div class="toggle" id="pairToggle">
+      <button data-ds="ctd" class="on">CTD + DrugBank (paper scale)</button>
+      <button data-ds="gold">Gottlieb gold standard</button>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr class="grp"><th></th><th colspan="2" class="grp">Drug–disease</th><th colspan="2" class="grp">Drug–target</th></tr>
+          <tr><th>Method</th><th>AUROC</th><th>AUPR</th><th>AUROC</th><th>AUPR</th></tr>
+        </thead>
+        <tbody id="pairtbody"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--acc)"></i>iDrug (mine / official port) and its β = 0 ablation “GRMF-style”</span>
+      <span><i style="background:var(--blue)"></i>published baselines (my implementations)</span>
+      <span><i style="background:var(--faint)"></i>trivial baselines</span>
+      <span>green = best per column</span>
+    </div>
+    <p class="sdesc" style="margin-top:22px" id="pairTakeaway">…</p>
+  </div>
+</section>
+
+<section id="coldstart">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">Experiment 2 · cold start</div>
+      <h2>New drug / new disease — every link of a held-out row is hidden</h2>
+      <p class="sdesc">
+        The scenario the paper cares about most: a drug (or disease/target) with <em>no</em> known links in the
+        task domain. The held-out drug still exists in the other domain, so the cross-network bridge can act.
+        Metric: precision@k (P@5/10/15), averaged over all held-out rows of the five folds.
+      </p>
+    </div>
+    <div class="toggle" id="coldToggle">
+      <button data-ds="ctd" class="on">CTD + DrugBank</button>
+      <button data-ds="gold">Gottlieb gold standard</button>
+    </div>
+    <div class="grid g2">
+      <div>
+        <div class="tblwrap">
+          <table class="cs">
+            <thead>
+              <tr class="grp"><th></th><th colspan="3" class="grp">Drug–disease</th><th colspan="3" class="grp">Drug–target</th></tr>
+              <tr><th>New drug — P@</th><th>5</th><th>10</th><th>15</th><th>5</th><th>10</th><th>15</th></tr>
+            </thead>
+            <tbody id="ndtbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="tblwrap">
+          <table class="cs">
+            <thead>
+              <tr class="grp"><th></th><th colspan="3" class="grp">Drug–disease</th><th colspan="3" class="grp">Drug–target</th></tr>
+              <tr><th>New disease / target — P@</th><th>5</th><th>10</th><th>15</th><th>5</th><th>10</th><th>15</th></tr>
+            </thead>
+            <tbody id="nctbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <p class="sdesc" style="margin-top:26px" id="coldTakeaway">…</p>
+  </div>
+</section>
+
+<section id="robustness">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">Experiment 3 · robustness</div>
+      <h2>How the cross-network weight and the sparsity dial behave on real data</h2>
+      <p class="sdesc">
+        Sweeps of the drug–disease AUPR on CTD + DrugBank with my iDrug (100 iterations, 5-fold, seed 0).
+        The β = 0 row is the pure single-domain ablation, so these charts show exactly what the
+        cross-network term contributes on real biology rather than synthetic graphs.
+      </p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Cross-network weight β</h3>
+        <div class="note" id="betaNote">…</div>
+        <div class="fig" id="figBeta"></div>
+      </div>
+      <div class="card">
+        <h3>Unobserved-cell weight w</h3>
+        <div class="note" id="wNote">…</div>
+        <div class="fig" id="figW"></div>
+      </div>
+      <div class="card">
+        <h3>α × β grid — AUPR</h3>
+        <div class="note">Green = the best corner of the grid. The paper's settings are α = 0.001 (shown, β = 0.001).</div>
+        <div class="fig" id="figHeat"></div>
+      </div>
+      <div class="card">
+        <h3>Degrading the bridge structure</h3>
+        <div class="note">X-axis: fraction <em>kept</em> of anchor links (left) and of the other domain's edges
+          (right). Dashed line = β = 0 ablation for the same experiment.</div>
+        <div class="fig" id="figWithhold"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="papercheck">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">Experiment 4 · paper check</div>
+      <h2>Run the official solver at the authors' documented settings</h2>
+      <p class="sdesc">
+        The authors' README documents a new-drug example: <span class="mono">main(70, 70, 0.3, 0.01, 0.01, 0.01, 1, '2', 20)</span>,
+        reported output <span class="mono">precision: 0.23</span> at k = 20. I ran my line-by-line port of their
+        solver at exactly those settings (rank 70/70, α = β = γ = 0.01, w = 0.3, up to 200 iterations) through my
+        cold-start protocol — same data, same metric spirit (P@20 over held-out drugs), not their exact split code.
+      </p>
+    </div>
+    <div class="big2">
+      <div class="bignum">
+        <div class="v" style="color:var(--acc)" id="pcMine">…</div>
+        <div class="k">P@20, port of authors' <span class="mono">iDrug.m</span>, their documented settings</div>
+      </div>
+      <div class="bignum">
+        <div class="v" style="color:var(--muted)">0.23</div>
+        <div class="k">the value printed in the authors' README for the same configuration</div>
+      </div>
+    </div>
+    <p class="sdesc" style="margin-top:22px" id="pcTakeaway">…</p>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">The fine print</div>
+      <h2>Limits — read before citing anything here</h2>
+    </div>
+    <div class="lim">
+      <div class="card">
+        <h3>Protocol ≠ the paper's protocol</h3>
+        <p>My pair CV hides 1/5 of links and samples negatives uniformly, following the paper's description —
+        but the split code, the exact negative draw, and the fold bookkeeping are mine. Cold-start P@k also
+        averages over held-out rows differently from their scenario code. Treat headline gaps as indicative.</p>
+      </div>
+      <div class="card">
+        <h3>Uniform negatives saturate</h3>
+        <p>On CTD drug–disease the popularity baseline alone is competitive with everything, because degree is
+        signal when negatives are uniform. A harder, degree-matched negative draw would likely reorder the table.
+        This is a known failure of the benchmark as published, not of any one method.</p>
+      </div>
+      <div class="card">
+        <h3>Model ≠ paper</h3>
+        <p><code>idrug()</code> is an independent reading of Eq. 1–3: consistency via drug–drug Gram matrices,
+        one shared rank (90) rather than 90/70, weight <code>w</code> not <code>w²</code>. The official port is
+        line-by-line but verified only against the authors' printed new-drug example, not the full paper tables.</p>
+      </div>
+      <div class="card">
+        <h3>Baselines are re-implementations</h3>
+        <p>GRMF and RLS-Kron follow their papers with default hyperparameters (no tuning); the bi-random walk is a
+        simplified stand-in for MBiRW. TL-HGBI is missing. Any baseline here is a floor of unknown height, and
+        tuning could move the ranking.</p>
+      </div>
+      <div class="card">
+        <h3>One seed</h3>
+        <p>The real-data tables are a single run per domain (seed 0, s.d. across folds). The synthetic benchmarks
+        used 3 seeds; the real-data runs do not, because each full pass costs minutes to hours on one CPU.</p>
+      </div>
+      <div class="card">
+        <h3>Not biomedical advice</h3>
+        <p>Predictions from this pipeline are unvalidated computational hypotheses. Nothing here has been
+        checked against assays, literature, or clinical data — the paper's own top prediction lists
+        (<code>validTop20gold.csv</code>) ship with the authors' repo if you want to compare.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="run">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">Reproduce</div>
+      <h2>Everything on this page, from a clean clone</h2>
+    </div>
+    <pre><span class="c"># 1 · install (numpy, scipy, pandas, scikit-learn — that's all)</span>
+pip install -r requirements.txt
+
+<span class="c"># 2 · get the authors' real data (their repo is ~290 MB; not shipped here)</span>
+git clone --depth 1 https://github.com/Case-esaC/iDrug iDrug
+
+<span class="c"># 3 · the benchmark + sweeps behind this page → results_real.json, sweeps_real.json</span>
+python run_real_all.py --mat iDrug            <span class="c"># full run, hours on one CPU core</span>
+python run_real_all.py --mat iDrug --quick    <span class="c"># 2-fold, 3-iteration smoke test</span>
+
+<span class="c"># 4 · rebuild the data file behind this website, then open docs/index.html</span>
+python make_site_data.py
+
+<span class="c"># 5 · the same script also runs on the CSV layout (data/README.md)</span>
+python run_real.py --mat iDrug --official --rank 90 --r2 70 --w 0.3 \
+  --alpha 0.001 --beta 0.001 --gamma 0.001 --folds 5 --reps 1</pre>
+    <p class="sdesc">
+      The synthetic generators (<span class="mono">gen_datasets.py</span>, <span class="mono">run_all.py</span>)
+      remain in the repo as fast pipeline tests — sizes match the paper, but nothing synthetic feeds this page.
+    </p>
+  </div>
+</section>
+
+<section id="data">
+  <div class="wrap">
+    <div class="shead">
+      <div class="slabel">Datasets</div>
+      <h2>What the numbers were computed on</h2>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>Dataset</th><th>Drug–disease</th><th>Drug–target</th><th>Shared drugs</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr class="hero"><td>CTD + DrugBank</td><td class="num">1,321 × 3,966 · 111,481 links</td><td class="num">946 × 3,610 · 10,234 links</td><td class="num">469</td><td>authors' <span class="mono">.mat</span> release (paper Table 1 scale)</td></tr>
+          <tr><td>Gottlieb gold</td><td class="num">593 × 313 · 1,933 links</td><td class="num">593 × 1,011 · 3,427 links</td><td class="num">593</td><td>authors' <span class="mono">goldDataset/</span> (PREDICT-style)</td></tr>
+          <tr class="bad"><td>synthetic × 3</td><td class="num">up to 1,321 × 3,966 · 111k links</td><td class="num">up to 946 × 3,610 · 10k links</td><td class="num">up to 593</td><td>this repo, for testing only — never shown here</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sdesc" style="margin-top:22px">
+      Real-data loading is handled by <span class="mono">loaders.load_mat()</span> — it reads the authors'
+      MATLAB files directly, including the gold dataset's headerless CSV variants. The five-CSV layout
+      (for swapping in your own data) is documented in <span class="mono">data/README.md</span>.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="kicker">iDrug reproduction · real CTD/DrugBank + Gottlieb data · CPU-only · seed 0</span>
+    <span class="sp"></span>
+    <a href="https://github.com/Harshini-Suresha/idrug-reproduction">Repository</a>
+    <a href="https://github.com/Case-esaC/iDrug">Original data + MATLAB</a>
+    <a href="https://doi.org/10.1371/journal.pcbi.1008040">Paper</a>
+  </div>
+</footer>
+
+<script src="idrug-data.js"></script>
+<script>
+const D = window.IDRUG_DATA || null;
+const fmt = v => v.toFixed(3);
+const mm = x => Array.isArray(x) ? x[0] : x;
+const ss = x => Array.isArray(x) && x[1] != null ? x[1] : null;
+const $ = s => document.querySelector(s);
+
+if (!D || !D.real){
+  document.body.insertAdjacentHTML("afterbegin",
+    "<div style='padding:40px;color:#f87171;font-family:monospace'>idrug-data.js missing or empty — run: python make_site_data.py</div>");
+} else {
+  render();
+}
+
+function pairRows(ds){
+  const dd = D.real[`${ds}_pair_drug_disease`], dt = D.real[`${ds}_pair_drug_target`];
+  const methods = ["iDrug","iDrug-official","GRMF-style","GRMF","RLS-Kron","BiRW-simplified","Similarity-kNN","Popularity"];
+  const best = (tbl, i) => {
+    let b=-Infinity,name="";
+    for (const m of methods){ if (tbl[m] && mm(tbl[m].aupr) > b){ b=mm(tbl[m].aupr); name=m; } }
+    return name;
+  };
+  const b = {dda:best(dd,0), ddp:best(dd,1), dta:best(dt,0), dtp:best(dt,1)};
+  return methods.map(m => {
+    const a = dd[m], c = dt[m];
+    const color = m.startsWith("iDrug") || m==="GRMF-style" ? "var(--acc)" : (m==="Popularity"||m==="Similarity-kNN") ? "var(--muted)" : "var(--blue)";
+    const cell = (tbl, bestName) => {
+      if (!tbl) return `<td class="num bad">—</td>`;
+      const v = mm(tbl.aupr), s = ss(tbl.aupr);
+      return `<td class="num bar ${m.startsWith("iDrug")?"g":""}" title="${s!=null?`± ${s.toFixed(3)}`:"single run"}">
+        <div class="fill" style="width:${((v-0.4)/(1-0.4))*100}%"></div>
+        <span class="${m===bestName?"best":""}">${fmt(v)}</span>${s!=null?` <span class="sig">±${s.toFixed(3)}</span>`:""}</td>`;
+    };
+    const plain = tbl => { const v=mm(tbl.auroc), s=ss(tbl.auroc); return `<td class="num">${fmt(v)}${s!=null?` <span class="sig">±${s.toFixed(3)}</span>`:""}</td>`; };
+    return `<tr class="${m==="iDrug"?"hero":""}"><td style="color:${color}">${m}</td>
+      ${plain(a)} ${cell(a, b.ddp)} ${plain(c)} ${cell(c, b.dtp)}</tr>`;
+  }).join("");
+}
+
+function coldRows(ds, which){
+  const dd = D.real[`${ds}_${which}_drug_disease`], dt = D.real[`${ds}_${which}_drug_target`];
+  const methods = ["iDrug","iDrug-official","GRMF-style","GRMF","RLS-Kron","BiRW-simplified","Similarity-kNN","Popularity"];
+  const ks = ["5","10","15"];
+  const bestj = (tbl, k) => { let b=-Infinity,n=""; for (const m of methods){ if (tbl && mm(tbl[m][ks[k]]) > b){ b=mm(tbl[m][ks[k]]); n=m; } } return n; };
+  const cell = (tbl, k, off, m) => {
+    if (!tbl) return `<td class="num bad">—</td>`;
+    const v = mm(tbl[m][ks[k]]);
+    return `<td class="num ${m===off[k]?"best":""}">${v.toFixed(3)}</td>`;
+  };
+  return methods.map(m => {
+    const offA = ks.map((_,k)=>bestj(dd,k)), offB = ks.map((_,k)=>bestj(dt,k));
+    return `<tr class="${m==="iDrug"?"hero":""}"><td>${m}</td>${ks.map((_,k)=>cell(dd,k,offA,m)).join("")}${ks.map((_,k)=>cell(dt,k,offB,m)).join("")}</tr>`;
+  }).join("");
+}
+
+function wireToggle(id, cb){
+  const box = $(id);
+  box.addEventListener("click", e => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    box.querySelectorAll("button").forEach(b => b.classList.toggle("on", b===btn));
+    cb(btn.dataset.ds);
+  });
+}
+
+function lineChart(el, {x, y, sd, xLabels, color, yMin, yMax, ref, refLabel, ticks=5, width=620, height=300, redBelow}){
+  const padL=56, padR=18, padT=16, padB=38;
+  const W=width, H=height, iw=W-padL-padR, ih=H-padT-padB;
+  const xs = x.map((_,i)=> padL + (x.length===1?iw/2:(i/(x.length-1))*iw));
+  const yv = v => padT + (1-(v-yMin)/(yMax-yMin))*ih;
+  let g = "";
+  for(let i=0;i<=ticks;i++){
+    const val = yMin + (yMax-yMin)*i/ticks, yy = yv(val);
+    g += `<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="#1e2936" stroke-width="1"/>`;
+    g += `<text x="${padL-10}" y="${yy+4}" text-anchor="end" fill="#5b6b7e" font-size="11" font-family="var(--mono)">${val.toFixed(2)}</text>`;
+  }
+  if (ref !== undefined && ref !== null){
+    g += `<line x1="${padL}" x2="${W-padR}" y1="${yv(ref)}" y2="${yv(ref)}" stroke="#8ea0b5" stroke-dasharray="5 5" stroke-width="1"/>`;
+    if (refLabel) g += `<text x="${W-padR}" y="${yv(ref)-6}" text-anchor="end" fill="#8ea0b5" font-size="10" font-family="var(--mono)">${refLabel}</text>`;
+  }
+  const pts = x.map((v,i)=>`${xs[i]},${yv(y[i])}`).join(" ");
+  let curve = `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  if (sd && sd.some(v=>v!=null)){
+    const up = x.map((v,i)=> sd[i]==null?"":`${xs[i]},${yv(y[i]+sd[i])}`).filter(Boolean).join(" ");
+    const dn = x.map((v,i)=> sd[i]==null?"":`${xs[i]},${yv(y[i]-sd[i])}`).filter(Boolean).reverse().join(" ");
+    curve = `<polygon points="${up} ${dn}" fill="${color}" opacity="0.13" stroke="none"/>` + curve;
+  }
+  let dots = "";
+  x.forEach((v,i)=>{
+    const col = (redBelow!==undefined && y[i] < redBelow) ? "#f87171" : color;
+    dots += `<circle cx="${xs[i]}" cy="${yv(y[i])}" r="4.5" fill="${col}" stroke="#0a0e13" stroke-width="1.5"><title>${xLabels?xLabels[i]:v} · AUPR ${y[i].toFixed(3)}${sd&&sd[i]!=null?` ± ${sd[i].toFixed(3)}`:""}</title></circle>`;
+    if (xLabels) dots += `<text x="${xs[i]}" y="${H-padB+22}" text-anchor="middle" fill="#8ea0b5" font-size="11" font-family="var(--mono)">${xLabels[i]}</text>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${g}${curve}${dots}</svg>`;
+}
+
+function render(){
+  wireToggle("#pairToggle", ds => { $("#pairtbody").innerHTML = pairRows(ds); });
+  wireToggle("#coldToggle", ds => { $("#ndtbody").innerHTML = coldRows(ds,"newdrug"); $("#nctbody").innerHTML = coldRows(ds,"newcol"); });
+  $("#pairtbody").innerHTML = pairRows("ctd");
+  $("#ndtbody").innerHTML = coldRows("ctd","newdrug");
+  $("#nctbody").innerHTML = coldRows("ctd","newcol");
+
+  const ctdDD = D.real["ctd_pair_drug_disease"], ctdDT = D.real["ctd_pair_drug_target"];
+  const goldDD = D.real["gold_pair_drug_disease"];
+  const pop = ctdDD && ctdDD["Popularity"] ? mm(ctdDD["Popularity"].aupr) : null;
+  if (pop !== null) $("#popNote").textContent = pop.toFixed(3);
+
+  const winner = tbl => {
+    let b=-Infinity,n="";
+    for (const m in tbl){ if (mm(tbl[m].aupr) > b){ b=mm(tbl[m].aupr); n=m; } }
+    return {n, v:b};
+  };
+  const takeDD = winner(ctdDD), takeDT = winner(ctdDT);
+  $("#pairTakeaway").innerHTML = `
+    On this protocol the top scores are held by ${takeDD.n} (${takeDD.v.toFixed(3)} AUPR, drug–disease) and
+    ${takeDT.n} (${takeDT.v.toFixed(3)}, drug–target); iDrug and its β = 0 ablation “GRMF-style” land within
+    ±${Math.max(Math.abs(mm(ctdDD["iDrug"].aupr)-mm(ctdDD["GRMF-style"].aupr)), Math.abs(mm(ctdDT["iDrug"].aupr)-mm(ctdDT["GRMF-style"].aupr))).toFixed(3)}
+    of their own single-domain ablation on both tasks, i.e. the cross-network term is not what drives this
+    table (Experiment 3 shows what it is doing instead). Rankings shift substantially between
+    CTD/DrugBank and the gold standard — ${goldDD ? `gold drug–disease is led by ${winner(goldDD).n}` : "see gold toggle"} —
+    so treat the ordering as dataset-specific.`;
+
+  if (ctdDD && D.real["ctd_newdrug_drug_disease"] && D.real["ctd_newdrug_drug_disease"]["iDrug"]){
+    const cnd = D.real["ctd_newdrug_drug_disease"],
+          gnd = D.real["ctd_newdrug_drug_target"],
+          pick = (tbl,k) => { let b=-Infinity,n=""; for (const m in tbl){ if (mm(tbl[m][k]) > b){ b=mm(tbl[m][k]); n=m; } } return {n,v:b}; };
+    const p10 = pick(cnd,"10"), p10t = pick(gnd,"10");
+    $("#coldTakeaway").innerHTML = `
+      Cold-start precision on CTD is led by ${p10.n} (P@10 = ${p10.v.toFixed(3)}) for new drugs on drug–disease and
+      ${p10t.n} (P@10 = ${p10t.v.toFixed(3)}) across the drug–target split; iDrug itself is at
+      ${mm(cnd["iDrug"]["10"]).toFixed(3)} and ${mm(gnd["iDrug"]["10"]).toFixed(3)} respectively. The spread between methods
+      here is large compared with pair prediction — a reminder that the cold-start setting, not the pair table,
+      is where method choice actually matters on this data.`;
+  }
+
+  if (!D.sweeps) return;
+  const sw = D.sweeps;
+  const refPair = sw.ref_grmf_style ? sw.ref_grmf_style.pair_aupr[0] : null;
+  const refND = sw.ref_grmf_style ? sw.ref_grmf_style.newdrug_p10 : null;
+
+  if (sw.beta_sweep){
+    const betas = sw.beta_sweep.betas, au = sw.beta_sweep.aupr;
+    const y = au.map(mm), sd = au.map(ss);
+    const lo = Math.min(...y, refPair ?? Math.min(...y)) - 0.05;
+    const hi = Math.max(...y, refPair ?? Math.max(...y)) + 0.03;
+    lineChart($("#figBeta"), {
+      x: betas.map(String), y, sd, xLabels: betas.map(String), color:"#4ade80",
+      yMin: lo, yMax: hi, ref: refPair, refLabel: refPair!==null ? "β=0 (GRMF-style)" : "",
+      redBelow: refPair!==null ? refPair - 0.1 : undefined});
+    const bmax = y.indexOf(Math.max(...y));
+    $("#betaNote").innerHTML = `Best β here: <span class="mono">${betas[bmax]}</span> → ${y[bmax].toFixed(3)} AUPR
+      (β = 0 ablation: ${refPair!==null?refPair.toFixed(3):"…"}). ${y[y.length-1] < (refPair ?? 0) - 0.1
+        ? "The largest β collapses — same narrow working band as on synthetic data."
+        : "Unlike the synthetic generator, real data does not collapse at large β within this range — the term just levels off."}`;
+  }
+
+  if (sw.w_sweep){
+    const ws = sw.w_sweep.w, au = sw.w_sweep.aupr;
+    const y = au.map(mm), sd = au.map(ss);
+    const lo = Math.min(...y) - 0.03, hi = Math.max(...y) + 0.03;
+    lineChart($("#figW"), {x: ws.map(String), y, sd, xLabels: ws.map(String), color:"#22d3ee", yMin: lo, yMax: hi});
+    const wmax = y.indexOf(Math.max(...y));
+    $("#wNote").innerHTML = `Best w here: <span class="mono">${ws[wmax]}</span> → ${y[wmax].toFixed(3)} AUPR.
+      The paper's default w = 0.3 scores ${y[ws.indexOf(0.3)]!==undefined?y[ws.indexOf(0.3)].toFixed(3):"—"} on this protocol.`;
+  }
+
+  if (sw.alpha_beta_grid){
+    const h = sw.alpha_beta_grid;
+    const vals = h.aupr.flat().map(mm);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const mix = (a,b,t)=>a+(b-a)*t;
+    const color = v => {
+      const t = Math.min(1, Math.max(0,(v-lo)/(hi-lo || 1)));
+      const r = t<0.5 ? mix(200,250,t*2) : mix(250,74,(t-0.5)*2);
+      const g2 = t<0.5 ? mix(90,204,t*2) : mix(204,222,(t-0.5)*2);
+      const b = t<0.5 ? mix(90,21,t*2) : mix(21,128,(t-0.5)*2);
+      return `rgb(${r|0},${g2|0},${b|0})`;
+    };
+    let html = `<table class="heat"><thead><tr><th></th><th colspan="${h.betas.length}">β →</th></tr><tr><th class="lbl">α ↓</th>${h.betas.map(b=>`<th class="lbl">${b}</th>`).join("")}</tr></thead><tbody>`;
+    h.aupr.forEach((row,i)=>{
+      html += `<tr><th class="lbl">${h.alphas[i]}</th>`;
+      row.forEach((v,j)=>{
+        html += `<td class="cell" style="background:${color(mm(v))}" title="α=${h.alphas[i]}, β=${h.betas[j]}${ss(v)!=null?` ± ${ss(v).toFixed(3)}`:""}">${mm(v).toFixed(2)}</td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    $("#figHeat").innerHTML = html;
+  }
+
+  if (sw.withhold_links && sw.withhold_anchors){
+    const mk = (rows, ykey, color, label, ref) => {
+      const keep = rows.levels, y = rows[ykey].map(mm);
+      const padL=52,padR=14,padT=14,padB=40,W=300,H=230,iw=W-padL-padR,ih=H-padT-padB;
+      const vv = y.concat(ref!=null?[ref]:[]);
+      const yMin=Math.min(...vv)-0.02, yMax=Math.max(...vv)+0.02;
+      const yv=v=>padT+(1-(v-yMin)/(yMax-yMin))*ih;
+      const xs=keep.map((_,i)=>padL+i/(keep.length-1)*iw);
+      let g="";
+      for(let i=0;i<=4;i++){const val=yMin+(yMax-yMin)*i/4,yy=yv(val);
+        g+=`<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="#1e2936"/><text x="${padL-8}" y="${yy+4}" text-anchor="end" fill="#5b6b7e" font-size="10" font-family="var(--mono)">${val.toFixed(2)}</text>`;}
+      if (ref!=null) g+=`<line x1="${padL}" x2="${W-padR}" y1="${yv(ref)}" y2="${yv(ref)}" stroke="#8ea0b5" stroke-dasharray="5 5"/>`;
+      const pts=y.map((v,i)=>`${xs[i]},${yv(v)}`).join(" ");
+      let dots=y.map((v,i)=>`<circle cx="${xs[i]}" cy="${yv(v)}" r="4" fill="${color}" stroke="#0a0e13" stroke-width="1.5"><title>keep ${keep[i]} · ${v.toFixed(3)}</title></circle>`).join("");
+      dots+=keep.map((k,i)=>`<text x="${xs[i]}" y="${H-padB+20}" text-anchor="middle" fill="#8ea0b5" font-size="10" font-family="var(--mono)">${k}</text>`).join("");
+      dots+=`<text x="${W/2}" y="${H-4}" text-anchor="middle" fill="#8ea0b5" font-size="10" font-family="var(--mono)">${label}</text>`;
+      return `<div style="display:inline-block;width:49%;min-width:250px"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.2"/>${g}${dots}</svg></div>`;
+    };
+    $("#figWithhold").innerHTML =
+      mk(sw.withhold_anchors, "iDrug_pair_aupr", "#4ade80", "anchor links kept (pair AUPR)", refPair) +
+      mk(sw.withhold_links,  "iDrug_pair_aupr", "#22d3ee", "other-domain links kept (pair AUPR)", refPair);
+  }
+
+  if (D.real.paper_check_newdrug_official_p20){
+    const v = mm(D.real.paper_check_newdrug_official_p20["iDrug-official"]["20"]);
+    $("#pcMine").textContent = v.toFixed(3);
+    const delta = v - 0.23;
+    $("#pcTakeaway").innerHTML = `My port lands at <span class="mono">${v.toFixed(3)}</span>, ${delta>=0?"above":"below"} the
+      authors' printed <span class="mono">0.23</span> by ${Math.abs(delta).toFixed(3)}. Same data, same solver
+      equations, my harness — close enough to say the port reproduces the qualitative behaviour of the official
+      code on its own documented example, not close enough to claim exact replication.`;
+  }
+}
+</script>
+</body>
+</html>
